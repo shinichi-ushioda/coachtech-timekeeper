@@ -6,6 +6,9 @@ use Illuminate\Support\ServiceProvider;
 use Laravel\Fortify\Fortify;
 use App\Actions\Fortify\CreateNewUser;
 use Laravel\Fortify\Contracts\RegisterResponse;
+use Laravel\Fortify\Features; //Laravel 13では config/fortify.php が無いので、FortifyServiceProvider 内で features を設定する必要あり
+use Illuminate\Cache\RateLimiting\Limit; //レートリミッターを定義
+use Illuminate\Support\Facades\RateLimiter; //　レートリミッターを定義
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -26,14 +29,40 @@ class FortifyServiceProvider extends ServiceProvider
      * Bootstrap services.
      */
     public function boot(): void
-    {
+    {   
+        //メール認証機能有効化（Laravel 13）
+        config(['fortify.features' => [
+        Features::registration(),
+        //Features::emailVerification(),
+        ]]);
+
+        // ★ login レートリミッターを定義（必須）
+        RateLimiter::for('login', function ($request) {
+                return Limit::perMinute(5)->by($request->email.$request->ip());
+        });
+
+        //ユーザ作成
         Fortify::createUsersUsing(CreateNewUser::class);
+
+        //登録画面
         Fortify::registerView(function () {
                 return view('auth.register');
         });
 
+        //ログイン画面
         Fortify::loginView(function () {
            return view('auth.login');
-    });
+        });
+
+        //【最重要】ログイン成功時のリダイレクト先を「/attendance」に完全固定する
+        $this->app->singleton(
+            \Laravel\Fortify\Contracts\LoginResponse::class,
+            fn () => new class implements \Laravel\Fortify\Contracts\LoginResponse {
+                public function toResponse($request)
+                {
+                    return redirect('/attendance');
+                }
+            }
+        );
     }
 }
