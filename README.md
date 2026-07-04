@@ -1,58 +1,141 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# アプリケーション名
+coachtech-timekeeper
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+# 環境構築
+Dockerビルド
 
-## About Laravel
+1. git clone https://github.com/shinichi-ushioda/coachtech-timekeeper.git
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+2. docker-compose up -d build
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+※MySQLは、OSによって起動しない場合があるのでそれぞれのPCに合わせてdocker-compose.ylmlファイルを編集してください。  
+Laravel環境構築
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+1.docker-compose exec php bash  
+2.composer install  
+3.env.exampleファイルから.envを作成し、環境変数を変更  
+4.php artisan key:generate  
+5.php artisan migrate  
+6.php artisan db:seed  
 
-## Learning Laravel
+## 使用技術
+・php 8.0
+・Laravel 13.16.1  
+・MySQL 8.0
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## URL
+・開発環境：http://localhost/:8080
+・phpMyAdmin:http://localhost:8081
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+※Makefileは実行するコマンドを省略することができる便利な設定ファイルです。コマンドの入力を効率的に行えるようになります。<br>
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## メール認証
+mailtrapというツールを使用しています。<br>
+以下のリンクから会員登録をしてください。　<br>
+https://mailtrap.io/
 
-## Agentic Development
+動作確認する際は、以下の項目を .env に設定してください。  
+.envファイルのMAIL_MAILERからMAIL_ENCRYPTIONまでの項目をコピー＆ペーストしてください。　<br>
+MAIL_MAILER=smtp  
+MAIL_HOST=sandbox.smtp.mailtrap.io  
+MAIL_PORT=2525  
+MAIL_USERNAME=（あなたのMailtrapのユーザー名）  
+MAIL_PASSWORD=（あなたのMailtrapのパスワード）  
+MAIL_ENCRYPTION=null  
+MAIL_FROM_ADDRESSは任意のメールアドレスを入力してください。
+Mailtrap の InboxID は、Mailtrap の「Email Testing → Inboxes」から確認できます。　<br>
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+　
 
-```bash
-composer require laravel/boost --dev
+## Stripeについて
+〇〇〇〇〇が行える想定です。<br>
 
-php artisan boost:install
+また、StripeのAPIキーは以下のように設定をお願いいたします。
+```
+STRIPE_PUBLIC_KEY="パブリックキー"
+STRIPE_SECRET_KEY="シークレットキー"
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+以下のリンクは公式ドキュメントです。<br>
+https://docs.stripe.com/payments/checkout?locale=ja-JP
+## テーブル仕様
+### usersテーブル
+| カラム名 | 型 | primary key | unique key | not null | foreign key |
+| --- | --- | --- | --- | --- | --- |
+| id | bigint | ◯ |  | ◯ |  |
+| name | varchar(255) |  |  | ◯ |  |
+| email | varchar(255) |  | ◯ | ◯ |  |
+| email_verified_at | timestamp |  |  |  |  |
+| password | varchar(255) |  |  | ◯ |  |
+| is_admin | boolean |  |  |  |  |
+| remember_token | varchar(100) |  |  |  |  |
+| created_at | timestamp |  |  |  |  |
+| updated_at | timestamp |  |  |  |  |
 
-## Contributing
+### attendancesテーブル
+| カラム名 | 型 | primary key | unique key | not null | foreign key |
+| --- | --- | --- | --- | --- | --- |
+| id | bigint | ◯ |  | ◯ |  |
+| user_id | bigint |  |  | ◯ | users(id) |
+| work_date | date |  |  | ◯ |  |
+| clock_in | datetime |  |  | ◯ |  |
+| clock_out | datetime |  |  | ◯ |  |
+| created_at | timestamp |  |  |  |  |
+| updated_at | timestamp |  |  |  |  |
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### breaksテーブル
+| カラム名 | 型 | primary key | unique key | not null | foreign key |
+| --- | --- | --- | --- | --- | --- |
+| id | bigint | ◯ |  | ◯ |  |
+| attendance_id | bigint |  |  | ◯ | attendances(id) |
+| break_in | datetime |  |  | ◯ |  |
+| break_out | datetime |  |  | ◯ |  |
+| created_at | timestamp |  |  |  |  |
+| updated_at | timestamp |  |  |  |  |
 
-## Code of Conduct
+### attendance_requestsテーブル
+| カラム名 | 型 | primary key | unique key | not null | foreign key |
+| --- | --- | --- | --- | --- | --- |
+| id | bigint | ◯ |  | ◯ |  |
+| attendance_id | bigint |  |  | ◯ | attendances(id) |
+| break_id | bigint |  |  |  | breaks(id) |
+| requested_clock_in | datetime |  |  |  |  |
+| requested_clock_out | datetime |  |  |  |  |
+| requested_break_in | datetime |  |  |  |  |
+| requested_break_out | datetime |  |  |  |  |
+| status | enum |  |  | ◯ |  |
+| reason | varchar(255) |  |  | ◯ |  |
+| approved_at | timestamp |  |  | ◯ |  |
+| created_at | timestamp |  |  |  |  |
+| updated_at | timestamp |  |  |  |  |
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 
-## Security Vulnerabilities
+## ER図
+![alt](ER.png)
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## テストアカウント
+name: 一般ユーザ  
+email: general1@gmail.com  
+password: password  
+-------------------------
+name: 一般ユーザ  
+email: general2@gmail.com  
+password: password  
+-------------------------
 
-## License
+## PHPUnitを利用したテストに関して
+以下のコマンド:  
+```
+//テスト用データベースの作成
+docker-compose exec mysql bash
+mysql -u root -p
+//パスワードはrootと入力
+create database test_database;
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+docker-compose exec php bash
+php artisan migrate:fresh --env=testing
+./vendor/bin/phpunit
+```
+※.env.testingにもStripeのAPIキーを設定してください。  
+
+

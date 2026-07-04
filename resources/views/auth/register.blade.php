@@ -11,7 +11,6 @@
 <!-- 本体 -->
 @section('content')
 
-@include('components.header')
 <form action="/register" method="post" class="authenticate center">
     @csrf
     <h1 class="page__title">会員登録</h1>

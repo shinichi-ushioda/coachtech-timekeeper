@@ -13,7 +13,7 @@
     </p>
 
     <div class="verify-action">
-        <a href="http://localhost:8025" target="_blank" class="verify-btn">認証はこちらから</a>
+        <a href="{{ route('verification.notice') }}" class="verify-btn"> 認証はこちらから</a>
     </div>
 
     <div class="resend-action">
