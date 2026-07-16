@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class AttendanceRequest extends Model
+class AttendanceCorrection extends Model
 {
     use HasFactory;
 
@@ -24,8 +24,7 @@ class AttendanceRequest extends Model
     protected $casts = [
         'requested_clock_in' => 'datetime',
         'requested_clock_out' => 'datetime',
-        'requested_break_in' => 'datetime',
-        'requested_break_out' => 'datetime',
+        'requested_breaks' => 'array',   // ★複数休憩をまとめて扱う
         'approved_at' => 'datetime',
     ];
 

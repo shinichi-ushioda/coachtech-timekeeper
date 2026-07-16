@@ -17,6 +17,10 @@
     /* ★縦方向中央 */
 }
 
+body {
+    background-color: #f2f2f2;
+}
+
 /* 日付 */
 .attendance-date {
     font-size: 30px;
@@ -58,13 +62,23 @@
 
 /* ボタン共通 */
 .attendance-actions button {
-    padding: 18px 0;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    /* ← 文字の縦中央ズレ防止 */
+    padding: 12px 24px;
+    /* ← 横幅を縮める */
     font-size: 20px;
     font-weight: bold;
     border-radius: 8px;
     border: none;
     cursor: pointer;
-    margin-top: 20px;
+    margin: 20px auto 0;
+    /* ← 中央寄せ */
+    width: auto;
+    /* ← 横幅を固定しない */
+    min-width: 140px;
+    /* ← 見本のバランスに近づける */
 }
 
 /* 出勤ボタン */
@@ -88,20 +102,22 @@
 
 /* 退勤ボタン */
 .btn-danger {
-    background-color: #dc3545;
+    background-color: #000;
     color: #fff;
 }
 
 /* 休憩入ボタン */
 .btn-warning {
-    background-color: #ffc107;
+    background-color: #fff;
     color: #000;
+    border: 1px solid #000;
 }
 
 /* 休憩戻ボタン */
 .btn-success {
-    background-color: #28a745;
-    color: #fff;
+    background-color: #fff;
+    color: #000;
+    border: 1px solid #000
 }
 
 /* 出勤後のボタン横並び */

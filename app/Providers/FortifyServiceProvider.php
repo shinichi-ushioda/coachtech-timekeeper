@@ -6,6 +6,8 @@ use Illuminate\Support\ServiceProvider;
 use Laravel\Fortify\Fortify;
 use App\Actions\Fortify\CreateNewUser;
 use Laravel\Fortify\Contracts\RegisterResponse;
+use App\Actions\Fortify\LogoutResponse;
+use Laravel\Fortify\Contracts\LogoutResponse as LogoutResponseContract;
 use Laravel\Fortify\Features; //Laravel 13では config/fortify.php が無いので、FortifyServiceProvider 内で features を設定する必要あり
 use Illuminate\Cache\RateLimiting\Limit; //レートリミッターを定義
 use Illuminate\Support\Facades\RateLimiter; //　レートリミッターを定義
@@ -23,6 +25,9 @@ class FortifyServiceProvider extends ServiceProvider
                 return redirect('/attendance');
             }
         });
+
+        // ログアウト後のリダイレクト
+        $this->app->singleton(LogoutResponseContract::class, LogoutResponse::class);
     }
 
     /**

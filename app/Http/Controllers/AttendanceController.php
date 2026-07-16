@@ -19,28 +19,31 @@ class AttendanceController extends Controller
 
         // 今日の勤怠を取得
         $attendance = Attendance::where('user_id', $userId)
-            ->whereDate('created_at', Carbon::today())
+            ->whereDate('work_date', Carbon::today())
             ->first();
 
         // 状態判定
-        if (!$attendance) {
-            $status = 'before_clock_in'; // 出勤前（勤務外）
+        if (!$attendance || !$attendance->clock_in) {
+            $attendanceStatus = 'before_clock_in'; // 出勤前（勤務外）
         } elseif ($attendance && !$attendance->clock_out) {
 
             // 休憩中かどうか
             $latestBreak = $attendance->breaks()->latest()->first();
 
             if ($latestBreak && $latestBreak->break_out === null) {
-                $status = 'on_break'; // 休憩中
+                $attendanceStatus = 'on_break'; // 休憩中
             } else {
-                $status = 'after_clock_in'; // 出勤中
+                $attendanceStatus = 'after_clock_in'; // 出勤中
             }
 
         } else {
-            $status = 'after_clock_out'; // 退勤済
+            $attendanceStatus = 'after_clock_out'; // 退勤済
         }
 
-        return view('layouts.attendance', compact('attendance', 'status'));
+        return view('layouts.attendance', [
+        'attendance' => $attendance,
+        'attendanceStatus' => $attendanceStatus, // これが超重要
+    ]);
     }
 
     /**
@@ -51,6 +54,7 @@ class AttendanceController extends Controller
         Attendance::create([
             'user_id' => Auth::id(),
             'clock_in' => Carbon::now(),
+            'work_date' => Carbon::today(),
         ]);
 
         return redirect()->route('attendance.index');
@@ -62,6 +66,7 @@ class AttendanceController extends Controller
     public function breakIn()
     {
         $attendance = Attendance::where('user_id', Auth::id())
+            ->whereDate('work_date', Carbon::today())
             ->whereNull('clock_out')
             ->first();
 
@@ -78,6 +83,7 @@ class AttendanceController extends Controller
     public function breakOut()
     {
         $attendance = Attendance::where('user_id', Auth::id())
+            ->whereDate('work_date', Carbon::today())
             ->whereNull('clock_out')
             ->first();
 
@@ -100,6 +106,7 @@ class AttendanceController extends Controller
     public function clockOut()
     {
         $attendance = Attendance::where('user_id', Auth::id())
+            ->whereDate('work_date', Carbon::today())
             ->whereNull('clock_out')
             ->first();
 

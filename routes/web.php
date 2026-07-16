@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\WorkRecordController;
 use App\Http\Controllers\RegisteredUserController;
 use App\Http\Requests\EmailVerificationRequest;
 use Illuminate\Http\Request;
@@ -17,20 +18,35 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
 
-    // 出勤
+    //勤怠登録画面（出勤）
     Route::post('/attendance/clock_in', [AttendanceController::class, 'clockIn'])
     ->name('attendance.clock_in');
 
-    // 退勤
+    //勤怠登録画面（退勤）
     Route::post('/attendance/clock_out', [AttendanceController::class, 'clockOut'])
     ->name('attendance.clock_out');
 
-    // 休憩開始
+    //勤怠登録画面（休憩開始）
     Route::post('/attendance/break_in', [AttendanceController::class, 'breakIn'])
     ->name('attendance.break_in');
 
-    // 休憩終了
+    //勤怠登録画面（休憩終了）
     Route::post('/attendance/break_out', [AttendanceController::class, 'breakOut'])
     ->name('attendance.break_out');
+
+    //勤怠一覧画面
+    Route::get('/attendance/list', [WorkRecordController::class, 'list'])->name('attendance.list');
+
+    //勤怠詳細画面（PG05）
+    Route::get('/attendance/detail/{id}', [WorkRecordController::class, 'detail'])->name('attendance.detail');
+
+    //勤怠詳細画面（勤務していない日用のURL）
+    Route::get('/attendance/detail/date/{date}', [WorkRecordController::class, 'detailByDate'])->name('attendance.detail.date');
+
+    //申請一覧画面
+    Route::get('/stamp_correction_request/list', [WorkRecordController::class, 'correctionRequestList'])->name('stamp_correction_request.list');
+    
+    // 修正申請の保存（勤怠詳細画面からの POST）
+    Route::post('/stamp_correction_request/store',[WorkRecordController::class, 'correctionRequestStore'])->name('stamp_correction_request.store');
 
 });
