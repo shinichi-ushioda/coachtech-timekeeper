@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
             UsersTableSeeder::class,
             AttendancesTableSeeder::class,
             BreaksTableSeeder::class,
-            AttendanceRequestsTableSeeder::class,
+            AttendanceCorrectionsTableSeeder::class,
         ]);
     }
 }

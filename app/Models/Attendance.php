@@ -31,12 +31,12 @@ class Attendance extends Model
     // 休憩（breaks）とのリレーション
     public function breaks()
     {
-        return $this->hasMany(Breaks::class);
+        return $this->hasMany(Breaks::class, 'attendance_id');
     }
 
-    // 修正申請（attendance_request）とのリレーション ※1日の修正申請は1回のみでルール化したのでhasOneとする。
-    public function attendanceRequest()
+    // 修正申請（attendance_）とのリレーション ※1日の修正申請は1回のみでルール化したのでhasOneとする。
+    public function correction()
     {
-        return $this->hasOne(AttendanceRequest::class);
+        return $this->hasOne(AttendanceCorrection::class);
     }
 }

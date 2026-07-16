@@ -13,6 +13,9 @@
     <script src="https://kit.fontawesome.com/42694f25bf.js" crossorigin="anonymous"></script>
     <script src="https://ajaxzip3.github.io/ajaxzip3.js" charset="UTF-8"></script>
 
+    {{-- Bootstrap Icons --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
     {{-- 共通CSS --}}
     <link rel="stylesheet" href="{{ asset('/css/reset.css') }}">
     <link rel="stylesheet" href="{{ asset('/css/common.css') }}">
@@ -23,6 +26,14 @@
     {{-- 勤怠登録画面専用CSS（PG03） --}}
     <link rel="stylesheet" href="{{ asset('/css/attendance.css') }}">
 
+     {{-- 勤怠一覧画面専用CSS --}}
+    <link rel="stylesheet" href="{{ asset('/css/list.css') }}">
+
+     {{-- 勤怠詳細画面専用CSS --}}
+    <link rel="stylesheet" href="{{ asset('/css/detail.css') }}">
+
+     {{-- 申請一覧画面専用CSS --}}
+     <link rel="stylesheet" href="{{ asset('/css/correction_request_list.css') }}">
     @yield('css')
 </head>
 

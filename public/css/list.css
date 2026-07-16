@@ -1,0 +1,160 @@
+/* 全体のラッパー（画面背景を薄いグレーにし、左右にゆとりを持たせる） */
+.attendance-list-wrapper {
+    max-width: 1000px;
+    /* 見本の横幅に近づけるため少し広げました */
+    margin: 40px auto;
+    background: #f2f2f2;
+    /* 見本通りの薄いグレー背景 */
+    padding: 20px;
+}
+
+/* タイトル部分 */
+.page-title {
+    background: transparent;
+    /* グレーの背景帯を消して見本通りに */
+    padding: 14px 0px;
+    /* 左右の余白をなくす */
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 26px;
+    font-weight: bold;
+    color: #000;
+    margin-bottom: 10px;
+}
+
+/* 月選択（独立した白いカード風にする） */
+.month-selector {
+    background: #fff;
+    /* 白背景 */
+    padding: 16px 24px;
+    /* 見本に合わせ上下左右の余白を確保 */
+    border-radius: 8px;
+    /* 角丸を少し滑らかに */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    /* 軽い影で浮き出させる */
+}
+
+/* 年月表示（2026/7） */
+.month-display {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* カレンダーアイコン */
+.calendar-icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    vertical-align: middle;
+}
+
+/* 前月・翌月ボタン */
+.month-btn {
+    background: transparent;
+    /* 背景を透明にし、見本のようなシンプルなテキストに */
+    color: #000;
+    padding: 6px 0;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.month-btn:hover {
+    text-decoration: underline;
+    /* ホバー時に下線 */
+}
+
+/* テーブル（独立した白いカード風にする） */
+.attendance-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    /* 白背景 */
+    border-radius: 8px;
+    /* テーブル全体の角を丸める */
+    overflow: hidden;
+    /* 角丸から中身がはみ出さないようにする */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    /* 軽い影を追加 */
+    table-layout: fixed;
+    /* ★最重要：全ての列の幅を均等に固定し、中身が空でも崩れなくする */
+}
+
+/* ヘッダーセルの調整 */
+.attendance-table th {
+    background: #fff;
+    color: #000;
+    font-weight: bold;
+    padding: 16px 10px;
+    font-size: 15px;
+    border-bottom: 4px solid #f2f2f2;
+    /* 見本のような少し太めの薄い境界線 */
+    text-align: center;
+}
+
+/* 各列の横幅（カラム幅）の比率を完全に均等に固定 */
+.attendance-table th:nth-child(1) {
+    width: 17%;
+}
+
+/* 日付 */
+.attendance-table th:nth-child(2) {
+    width: 16%;
+}
+
+/* 出勤 */
+.attendance-table th:nth-child(3) {
+    width: 16%;
+}
+
+/* 退勤 */
+.attendance-table th:nth-child(4) {
+    width: 16%;
+}
+
+/* 休憩 */
+.attendance-table th:nth-child(5) {
+    width: 16%;
+}
+
+/* 合計 */
+.attendance-table th:nth-child(6) {
+    width: 19%;
+}
+
+/* 詳細 */
+
+/* データセルの調整 */
+.attendance-table td {
+    border-bottom: 3px solid #f2f2f2;
+    /* 線を少し薄くして見本に近づける */
+    padding: 16px 10px;
+    /* 上下の余白を広げて見本のゆったり感を再現 */
+    text-align: center;
+    vertical-align: middle;
+    color: #333;
+    font-size: 15px;
+}
+
+/* 詳細リンクテキスト（見本に合わせて背景や枠線を消し、シンプルな黒文字に） */
+.detail-btn {
+    background: transparent;
+    color: #000;
+    padding: 0;
+    font-weight: bold;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.detail-btn:hover {
+    text-decoration: underline;
+    /* ホバー時に下線 */
+}

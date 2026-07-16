@@ -32,8 +32,8 @@ class Breaks extends Model
      * 修正申請（1 → 1 or 0）
      * ※「休憩の修正申請は1回だけ」という新仕様に対応
      */
-    public function attendanceRequest()
+    public function correction()
     {
-        return $this->hasOne(AttendanceRequest::class);
+        return $this->hasOne(AttendanceCorrection::class);
     }
 }

@@ -1,11 +1,11 @@
 <mxfile host="65bd71144e">
     <diagram id="NkiAakjMNH9ZYTfHLCpY" name="ページ1">
-        <mxGraphModel dx="2486" dy="2143" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="#FFFFFF" math="0" shadow="0">
+        <mxGraphModel dx="2069" dy="1828" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="#FFFFFF" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
                 <mxCell id="158" value="attendances" style="shape=table;startSize=30;container=1;collapsible=0;childLayout=tableLayout;strokeColor=default;fontSize=16;" parent="1" vertex="1">
-                    <mxGeometry x="-200" y="480" width="360" height="310" as="geometry"/>
+                    <mxGeometry x="-205" y="480" width="360" height="310" as="geometry"/>
                 </mxCell>
                 <mxCell id="354" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;strokeColor=inherit;top=0;left=0;bottom=0;right=0;collapsible=0;dropTarget=0;fillColor=none;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=16;" parent="158" vertex="1">
                     <mxGeometry y="30" width="360" height="40" as="geometry"/>
@@ -94,7 +94,7 @@
                         <mxRectangle width="40" height="40" as="alternateBounds"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="373" value="" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" parent="369" vertex="1">
+                <mxCell id="373" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;NOT NULL&lt;/span&gt;" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;" parent="369" vertex="1">
                     <mxGeometry x="230" width="130" height="40" as="geometry">
                         <mxRectangle width="130" height="40" as="alternateBounds"/>
                     </mxGeometry>
@@ -168,7 +168,7 @@
                         <mxRectangle width="130" height="40" as="alternateBounds"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="197" value="attendance_requests" style="shape=table;startSize=30;container=1;collapsible=0;childLayout=tableLayout;strokeColor=default;fontSize=16;" parent="1" vertex="1">
+                <mxCell id="197" value="attendance_correction" style="shape=table;startSize=30;container=1;collapsible=0;childLayout=tableLayout;strokeColor=default;fontSize=16;" parent="1" vertex="1">
                     <mxGeometry x="-827" y="-140" width="410" height="510" as="geometry"/>
                 </mxCell>
                 <mxCell id="198" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;strokeColor=inherit;top=0;left=0;bottom=0;right=0;collapsible=0;dropTarget=0;fillColor=none;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=16;" parent="197" vertex="1">
@@ -800,9 +800,6 @@
                             <mxPoint x="-158" y="330"/>
                         </Array>
                     </mxGeometry>
-                </mxCell>
-                <mxCell id="505" value="Text" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="170" y="830" width="50" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="506" value="" style="fontSize=12;html=1;endArrow=ERmandOne;startArrow=ERmandOne;" parent="1" edge="1">
                     <mxGeometry width="100" height="100" relative="1" as="geometry">
