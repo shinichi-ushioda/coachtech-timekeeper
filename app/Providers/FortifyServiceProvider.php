@@ -35,12 +35,6 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {   
-        //メール認証機能有効化（Laravel 13）
-        config(['fortify.features' => [
-        Features::registration(),
-        //Features::emailVerification(),
-        ]]);
-
         // ★ login レートリミッターを定義（必須）
         RateLimiter::for('login', function ($request) {
                 return Limit::perMinute(5)->by($request->email.$request->ip());
@@ -65,7 +59,7 @@ class FortifyServiceProvider extends ServiceProvider
             fn () => new class implements \Laravel\Fortify\Contracts\LoginResponse {
                 public function toResponse($request)
                 {
-                    return redirect('/attendance');
+                    return redirect('verification.notice');
                 }
             }
         );

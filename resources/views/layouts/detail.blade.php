@@ -64,42 +64,46 @@
 </tr>
 
 
-            {{-- 休憩一覧 --}}
-            @foreach($breaks as $index => $break)
-                <tr>
-                    <th>休憩{{ $index + 1 }}</th>
-                    <td class="time-range">
-                        @if(!$request || $request->status !== 'pending')
-                            <input type="time" name="requested_breaks[{{ $index }}][in]" form="correctionForm"
-                                   class="input-time"
-                                   value="{{ $break->break_in ? $break->break_in->format('H:i') : '' }}">
-                            <span class="wave">～</span>
-                            <input type="time" name="requested_breaks[{{ $index }}][out]" form="correctionForm"
-                                   class="input-time"
-                                   value="{{ $break->break_out ? $break->break_out->format('H:i') : '' }}">
-                        @else
-                            <span class="text-display">
-                                {{ optional($break->break_in)->format('H:i') }} ～ 
-                                {{ optional($break->break_out)->format('H:i') }}
-                            </span>
-                        @endif
-                    </td>
-                </tr>
-            @endforeach
+           {{-- 休憩一覧 --}}
+@if(!$request || $request->status !== 'pending')
+    {{-- 編集モード：元の休憩レコードを入力欄で表示 --}}
+    @foreach($breaks as $index => $break)
+        <tr>
+            <th>休憩{{ $index + 1 }}</th>
+            <td class="time-range">
+                <input type="time" name="requested_breaks[{{ $index }}][in]" form="correctionForm"
+                       class="input-time"
+                       value="{{ $break->break_in ? $break->break_in->format('H:i') : '' }}">
+                <span class="wave">～</span>
+                <input type="time" name="requested_breaks[{{ $index }}][out]" form="correctionForm"
+                       class="input-time"
+                       value="{{ $break->break_out ? $break->break_out->format('H:i') : '' }}">
+            </td>
+        </tr>
+    @endforeach
 
-            {{-- 休憩の追加枠 --}}
-            <tr>
-                <th>休憩{{ count($breaks) + 1 }}</th>
-                <td class="time-range">
-                    @if(!$request || $request->status !== 'pending')
-                        <input type="time" name="requested_breaks_new[in]" form="correctionForm" class="input-time">
-                        <span class="wave">～</span>
-                        <input type="time" name="requested_breaks_new[out]" form="correctionForm" class="input-time">
-                    @else
-                        <span class="text-display">—</span>
-                    @endif
-                </td>
-            </tr>
+    {{-- 休憩の追加枠 --}}
+    <tr>
+        <th>休憩{{ count($breaks) + 1 }}</th>
+        <td class="time-range">
+            <input type="time" name="requested_breaks_new[in]" form="correctionForm" class="input-time">
+            <span class="wave">～</span>
+            <input type="time" name="requested_breaks_new[out]" form="correctionForm" class="input-time">
+        </td>
+    </tr>
+@else
+    {{-- 承認待ちモード：申請された休憩内容（requested_breaks）を表示 --}}
+    @foreach($request->requested_breaks ?? [] as $index => $break)
+        <tr>
+            <th>休憩{{ $index + 1 }}</th>
+            <td class="time-range">
+                <span class="text-display">
+                    {{ $break['break_in'] ?? '' }} ～ {{ $break['break_out'] ?? '' }}
+                </span>
+            </td>
+        </tr>
+    @endforeach
+@endif
 
             {{-- 備考 --}}
             <tr>

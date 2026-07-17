@@ -10,12 +10,13 @@ use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 use Laravel\Fortify\Fortify;
 
-
+// 認証誘導画面は auth のみ（verified を付けない）
 Route::middleware(['auth'])->group(function () {
     Route::get('/email/verify', function () {
         return view('auth.verify_email');})->name('verification.notice');
-        
-
+});        
+// メール認証済みでないと入れない画面群
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
 
     //勤怠登録画面（出勤）

@@ -16,6 +16,7 @@ class AttendanceCorrection extends Model
         'requested_clock_out',
         'requested_break_in',
         'requested_break_out',
+        'requested_breaks',
         'status',
         'reason',
         'approved_at',

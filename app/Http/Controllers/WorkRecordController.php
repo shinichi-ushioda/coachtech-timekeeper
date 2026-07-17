@@ -226,7 +226,7 @@ public function correctionRequestStore(Request $request)
         'requested_clock_out'  => $request->requested_clock_out,
         
         // 配列にデータがあればJSONに変換、なければNULLにして保存
-        'requested_breaks'     => count($formattedBreaks) > 0 ? json_encode($formattedBreaks) : null,
+        'requested_breaks' => count($formattedBreaks) > 0 ? $formattedBreaks : null,
         
         'reason'               => $request->reason,
         'status'               => 'pending',
