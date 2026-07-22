@@ -4,6 +4,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\WorkRecordController;
 use App\Http\Controllers\RegisteredUserController;
+use App\Http\Controllers\AdminAuthController;
 use App\Http\Requests\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -14,7 +15,17 @@ use Laravel\Fortify\Fortify;
 Route::middleware(['auth'])->group(function () {
     Route::get('/email/verify', function () {
         return view('auth.verify_email');})->name('verification.notice');
-});        
+});
+
+// 管理者ログイン画面の表示（画面表示のみ自前）
+Route::get('/admin/login', [AdminAuthController::class, 'create'])->name('admin.login');
+// 認証処理は Fortify のコントローラーに任せる
+Route::post('/admin/login', [AuthenticatedSessionController::class, 'store']);
+
+Route::middleware(['auth', 'admin'])->group(function () {
+    // 勤怠一覧画面（管理者）などをここに追加していく
+});
+
 // メール認証済みでないと入れない画面群
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');

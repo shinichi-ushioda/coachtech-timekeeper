@@ -1,10 +1,10 @@
 <header class="header">
     <div class="header__logo">
-        <img src="{{ asset('img/logo.png') }}" alt="ロゴ">
+        <h1><img src="{{ asset('img/logo.png') }}" alt="ロゴ"></h1>
     </div>
 
     {{-- register / login / verification.notice の画面では非表示 --}}
-    @if( !in_array(Route::currentRouteName(), ['register', 'login', 'verification.notice']) )
+    @if( !in_array(Route::currentRouteName(), ['register', 'login', 'admin.login', 'verification.notice']) )
 
         {{-- ログインしている場合のみ表示 --}}
         @if(Auth::check())

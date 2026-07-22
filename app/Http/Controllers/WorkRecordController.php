@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Attendance;
 use App\Models\AttendanceCorrection;
 use Carbon\Carbon;
+use App\Http\Requests\StampCorrectionRequest;
 
 class WorkRecordController extends Controller
 {
@@ -177,7 +178,7 @@ class WorkRecordController extends Controller
     /**
      * 修正申請の保存（勤怠詳細画面からの POST）
      */
-public function correctionRequestStore(Request $request)
+public function correctionRequestStore(StampCorrectionRequest $request)
 {
     // 1. 【超重要】バリデーションを実行し、フォームからのデータを確実にコントローラーに認識させます
     $request->validate([
@@ -197,43 +198,34 @@ public function correctionRequestStore(Request $request)
     // 3. 送られてきた休憩データを配列にまとめる処理
     $formattedBreaks = [];
 
-    // 既存の休憩データ（変更分）の取り出し
-    $requestedBreaks = $request->input('requested_breaks', []);
-    if (is_array($requestedBreaks)) {
-        foreach ($requestedBreaks as $break) {
-            if (isset($break['in']) && isset($break['out']) && $break['in'] !== '' && $break['out'] !== '') {
-                $formattedBreaks[] = [
-                    'break_in'  => $break['in'],
-                    'break_out' => $break['out'],
-                ];
-            }
+     foreach ($request->input('requested_breaks', []) as $break) {
+        if (!empty($break['in']) && !empty($break['out'])) {
+            $formattedBreaks[] = [
+                'break_in'  => $break['in'],
+                'break_out' => $break['out'],
+            ];
         }
     }
 
-    // 新しく追加された休憩枠（requested_breaks_new）の取り出し
     $newBreak = $request->input('requested_breaks_new', []);
-    if (isset($newBreak['in']) && isset($newBreak['out']) && $newBreak['in'] !== '' && $newBreak['out'] !== '') {
+    if (!empty($newBreak['in']) && !empty($newBreak['out'])) {
         $formattedBreaks[] = [
             'break_in'  => $newBreak['in'],
             'break_out' => $newBreak['out'],
         ];
     }
 
-    // 4. データベースへ保存する（create）
     AttendanceCorrection::create([
-        'attendance_id'        => $request->attendance_id,
-        'requested_clock_in'   => $request->requested_clock_in,
-        'requested_clock_out'  => $request->requested_clock_out,
-        
-        // 配列にデータがあればJSONに変換、なければNULLにして保存
-        'requested_breaks' => count($formattedBreaks) > 0 ? $formattedBreaks : null,
-        
-        'reason'               => $request->reason,
-        'status'               => 'pending',
+        'attendance_id'       => $request->attendance_id,
+        'requested_clock_in'  => $request->requested_clock_in,
+        'requested_clock_out' => $request->requested_clock_out,
+        // casts の 'array' に任せるので json_encode はしない
+        'requested_breaks'    => count($formattedBreaks) > 0 ? $formattedBreaks : null,
+        'reason'              => $request->reason,
+        'status'              => 'pending',
     ]);
 
-    // 5. メッセージ付きで元の画面に戻す
-    return back()->with('message', '※承認待ちのため修正はできません。');
+    return back()->with('message', '修正申請を送信しました。');
 }
 
 }

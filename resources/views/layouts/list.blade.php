@@ -4,9 +4,9 @@
 <div class="attendance-list-wrapper">
 
     {{-- タイトル（グレー背景） --}}
-    <h2 class="page-title">
+    <h1 class="page-title">
          勤怠一覧
-    </h2>
+    </h1>
 
     {{-- 月選択（白背景） --}}
     <div class="month-selector">

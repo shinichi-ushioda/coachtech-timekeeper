@@ -11,6 +11,11 @@ use Laravel\Fortify\Contracts\LogoutResponse as LogoutResponseContract;
 use Laravel\Fortify\Features; //Laravel 13では config/fortify.php が無いので、FortifyServiceProvider 内で features を設定する必要あり
 use Illuminate\Cache\RateLimiting\Limit; //レートリミッターを定義
 use Illuminate\Support\Facades\RateLimiter; //　レートリミッターを定義
+use App\Http\Requests\LoginRequest;
+use Laravel\Fortify\Http\Requests\LoginRequest as FortifyLoginRequest;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -19,15 +24,19 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->instance(RegisterResponse::class, new class implements RegisterResponse {
-            public function toResponse($request)
-            {
-                return redirect('/attendance');
-            }
-        });
+         // Fortify の LoginRequest を、自作の LoginRequest に差し替える
+         $this->app->bind(FortifyLoginRequest::class, LoginRequest::class);
 
-        // ログアウト後のリダイレクト
-        $this->app->singleton(LogoutResponseContract::class, LogoutResponse::class);
+         // 会員登録後のリダイレクト
+         $this->app->instance(RegisterResponse::class, new class implements RegisterResponse {
+             public function toResponse($request)
+            {
+                 return redirect('/attendance');
+            }
+         });
+
+         // ログアウト後のリダイレクト
+         $this->app->singleton(LogoutResponseContract::class, LogoutResponse::class);
     }
 
     /**
@@ -59,9 +68,36 @@ class FortifyServiceProvider extends ServiceProvider
             fn () => new class implements \Laravel\Fortify\Contracts\LoginResponse {
                 public function toResponse($request)
                 {
-                    return redirect('verification.notice');
+                    // 管理者は管理画面へ、一般ユーザーは打刻画面へ
+                     if ($request->user()->admin_status) {
+                         return redirect('/admin/attendance/list');
+                    }
+                
+                     return redirect('/attendance');
                 }
             }
         );
+
+        // 認証ロジック（一般・管理者で共通、URLで判定を分ける）
+        Fortify::authenticateUsing(function (Request $request) {
+             $user = User::where('email', $request->email)->first();
+
+             // メールアドレスまたはパスワードが違う
+             if (! $user || ! Hash::check($request->password, $user->password)) {
+                 return null;
+             }
+
+             // 管理者ログイン画面からは、管理者以外を拒否
+             if ($request->is('admin/login') && ! $user->admin_status) {
+                 return null;
+             } 
+
+             // 一般ログイン画面からは、管理者を拒否
+             if ($request->is('login') && $user->admin_status) {
+                 return null;
+            }
+
+            return $user;
+        });
     }
 }
