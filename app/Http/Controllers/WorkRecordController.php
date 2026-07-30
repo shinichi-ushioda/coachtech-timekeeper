@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Attendance;
 use App\Models\AttendanceCorrection;
 use Carbon\Carbon;
+use App\Http\Requests\StampCorrectionRequest;
 
 class WorkRecordController extends Controller
 {
@@ -142,8 +143,8 @@ class WorkRecordController extends Controller
              'work_date'    => $date,
          ], [
         // データベースの設計に合わせて、未打刻状態の初期値を設定（以下は例です）
-             'check_in'  => null, 
-             'check_out' => null,
+             'clock_in'  => null, 
+             'clock_out' => null,
         ]);
 
          // 自動作成された（または既存の）データの「id」を使って、設計書通りの詳細画面へリダイレクト
@@ -151,33 +152,46 @@ class WorkRecordController extends Controller
     }
 
     /**
-     * 申請一覧画面（PG06）
+     * 申請一覧画面（PG06 / PG12）
+     * 同じパス /stamp_correction_request/list を、ログインユーザーの種別で分岐する
      */
     public function correctionRequestList(Request $request)
     {
-         $userID = Auth::id();
+        $user = Auth::user();
 
-         //タブの状態（pending / approved）
-         $status = $request->input('status', 'pending');
+        // タブの状態（pending / approved）
+        $status = $request->input('status', 'pending');
 
-         //状態に応じて修正申請を取得
-         $correctionRequests = AttendanceCorrection::with('attendance')
-         ->where('status', $status) 
-         ->whereHas('attendance', function($query) use ($userID){
-            $query->where('user_id', $userID);
-        })
-         ->join('attendances', 'attendance_corrections.attendance_id', '=', 'attendances.id')
-         ->orderBy('attendances.work_date', 'asc') 
-         ->select('attendance_corrections.*')
-         ->get();
+        // 管理者：全ユーザーの申請を表示
+        if ($user->admin_status) {
+            $requests = AttendanceCorrection::with(['attendance.user'])
+                ->where('status', $status)
+                ->join('attendances', 'attendance_corrections.attendance_id', '=', 'attendances.id')
+                ->orderBy('attendances.work_date', 'asc')
+                ->select('attendance_corrections.*')
+                ->get();
 
-         return view('layouts.correction_request_list', compact('correctionRequests', 'status'));
+            return view('admin.correction_request_list', compact('requests', 'status'));
+        }
+
+        // 一般ユーザー：自分の申請のみ表示
+        $correctionRequests = AttendanceCorrection::with('attendance')
+            ->where('status', $status)
+            ->whereHas('attendance', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->join('attendances', 'attendance_corrections.attendance_id', '=', 'attendances.id')
+            ->orderBy('attendances.work_date', 'asc')
+            ->select('attendance_corrections.*')
+            ->get();
+
+        return view('layouts.correction_request_list', compact('correctionRequests', 'status'));
     }
 
     /**
      * 修正申請の保存（勤怠詳細画面からの POST）
      */
-public function correctionRequestStore(Request $request)
+public function correctionRequestStore(StampCorrectionRequest $request)
 {
     // 1. 【超重要】バリデーションを実行し、フォームからのデータを確実にコントローラーに認識させます
     $request->validate([
@@ -197,43 +211,34 @@ public function correctionRequestStore(Request $request)
     // 3. 送られてきた休憩データを配列にまとめる処理
     $formattedBreaks = [];
 
-    // 既存の休憩データ（変更分）の取り出し
-    $requestedBreaks = $request->input('requested_breaks', []);
-    if (is_array($requestedBreaks)) {
-        foreach ($requestedBreaks as $break) {
-            if (isset($break['in']) && isset($break['out']) && $break['in'] !== '' && $break['out'] !== '') {
-                $formattedBreaks[] = [
-                    'break_in'  => $break['in'],
-                    'break_out' => $break['out'],
-                ];
-            }
+     foreach ($request->input('requested_breaks', []) as $break) {
+        if (!empty($break['in']) && !empty($break['out'])) {
+            $formattedBreaks[] = [
+                'break_in'  => $break['in'],
+                'break_out' => $break['out'],
+            ];
         }
     }
 
-    // 新しく追加された休憩枠（requested_breaks_new）の取り出し
     $newBreak = $request->input('requested_breaks_new', []);
-    if (isset($newBreak['in']) && isset($newBreak['out']) && $newBreak['in'] !== '' && $newBreak['out'] !== '') {
+    if (!empty($newBreak['in']) && !empty($newBreak['out'])) {
         $formattedBreaks[] = [
             'break_in'  => $newBreak['in'],
             'break_out' => $newBreak['out'],
         ];
     }
 
-    // 4. データベースへ保存する（create）
     AttendanceCorrection::create([
-        'attendance_id'        => $request->attendance_id,
-        'requested_clock_in'   => $request->requested_clock_in,
-        'requested_clock_out'  => $request->requested_clock_out,
-        
-        // 配列にデータがあればJSONに変換、なければNULLにして保存
-        'requested_breaks' => count($formattedBreaks) > 0 ? $formattedBreaks : null,
-        
-        'reason'               => $request->reason,
-        'status'               => 'pending',
+        'attendance_id'       => $request->attendance_id,
+        'requested_clock_in'  => $request->requested_clock_in,
+        'requested_clock_out' => $request->requested_clock_out,
+        // casts の 'array' に任せるので json_encode はしない
+        'requested_breaks'    => count($formattedBreaks) > 0 ? $formattedBreaks : null,
+        'reason'              => $request->reason,
+        'status'              => 'pending',
     ]);
 
-    // 5. メッセージ付きで元の画面に戻す
-    return back()->with('message', '※承認待ちのため修正はできません。');
+    return back()->with('message', '修正申請を送信しました。');
 }
 
 }

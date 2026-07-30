@@ -39,4 +39,41 @@ class Attendance extends Model
     {
         return $this->hasOne(AttendanceCorrection::class);
     }
+
+    /**
+    * 休憩時間の合計（分）
+    */
+    public function totalBreakMinutes(): int
+    {
+         return $this->breaks->sum(function ($break) {
+             if (! $break->break_in || ! $break->break_out) {
+                 return 0;
+             }
+        return $break->break_in->diffInMinutes($break->break_out);
+        });
+    }
+
+    /**
+    * 実労働時間の合計（分）＝ 退勤 - 出勤 - 休憩
+    */
+    public function totalWorkMinutes(): int
+    {
+         if (! $this->clock_in || ! $this->clock_out) {
+             return 0;
+         }
+
+         return $this->clock_in->diffInMinutes($this->clock_out) - $this->totalBreakMinutes();
+    }
+
+    /**
+     * 分を "H:MM" 形式に変換（0分のときは空文字）
+    */
+    public static function formatMinutes(int $minutes): string
+    {
+         if ($minutes <= 0) {
+             return '';
+         }
+
+         return floor($minutes / 60) . ':' . str_pad($minutes % 60, 2, '0', STR_PAD_LEFT);
+    }
 }

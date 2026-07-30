@@ -227,3 +227,9 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 input[type="time"] {
     -webkit-appearance: none;
 }
+
+.error-message {
+    color: #ff0000;
+    font-size: 14px;
+    margin-top: 4px;
+}
