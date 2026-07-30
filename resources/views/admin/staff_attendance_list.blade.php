@@ -1,28 +1,28 @@
 @extends('layouts.default')
 
-@section('title', '勤怠一覧')
+@section('title', 'スタッフ別勤怠一覧')
 
 @section('content')
 <div class="attendance-list-wrapper">
 
     {{-- タイトル --}}
     <h2 class="page-title">
-        {{ $date->format('Y年n月j日') }}の勤怠
+        {{ $user->name }}さんの勤怠
     </h2>
 
-    {{-- 日付選択 --}}
+    {{-- 月選択 --}}
     <div class="month-selector">
-        <a href="{{ route('admin.attendance.list', ['date' => $prevDate]) }}" class="month-btn">
-            ← 前日
+        <a href="{{ route('admin.attendance.staff', ['id' => $user->id, 'month' => $prevMonth]) }}" class="month-btn">
+            ← 前月
         </a>
 
         <div class="month-display">
             <i class="bi bi-calendar3"></i>
-            <span>{{ $date->format('Y/m/d') }}</span>
+            <span>{{ $month->format('Y/m') }}</span>
         </div>
 
-        <a href="{{ route('admin.attendance.list', ['date' => $nextDate]) }}" class="month-btn">
-            翌日 →
+        <a href="{{ route('admin.attendance.staff', ['id' => $user->id, 'month' => $nextMonth]) }}" class="month-btn">
+            翌月 →
         </a>
     </div>
 
@@ -30,7 +30,7 @@
     <table class="attendance-table">
         <thead>
             <tr>
-                <th>名前</th>
+                <th>日付</th>
                 <th>出勤</th>
                 <th>退勤</th>
                 <th>休憩</th>
@@ -40,14 +40,19 @@
         </thead>
 
         <tbody>
-            @foreach($users as $user)
             @php
-            $attendance = $attendances->get($user->id);
+            $weekMap = ['日','月','火','水','木','金','土'];
+            @endphp
+
+            @foreach($days as $day)
+            @php
+            $attendance = $attendances->get($day->toDateString());
+            $weekday = $weekMap[$day->format('w')];
             @endphp
 
             <tr>
-                {{-- 名前 --}}
-                <td>{{ $user->name }}</td>
+                {{-- 日付 --}}
+                <td>{{ $day->format('m/d') }}({{ $weekday }})</td>
 
                 {{-- 出勤時刻 --}}
                 <td>{{ $attendance?->clock_in ? $attendance->clock_in->format('H:i') : '' }}</td>
@@ -64,13 +69,13 @@
                 {{-- 詳細ボタン --}}
                 <td>
                     @if($attendance)
-                         <a href="/admin/attendance/{{ $attendance->id }}" class="detail-btn">
-                             詳細
-                         </a>
+                    <a href="/admin/attendance/{{ $attendance->id }}" class="detail-btn">
+                        詳細
+                    </a>
                     @else
-                         <a href="{{ route('admin.attendance.showByDate', ['user' => $user->id, 'date' => $date->format('Y-m-d')]) }}" class="detail-btn">
-                              詳細
-                         </a>
+                    <a href="{{ route('admin.attendance.showByDate', ['user' => $user->id, 'date' => $day->format('Y-m-d')]) }}" class="detail-btn">
+                        詳細
+                    </a>
                     @endif
                 </td>
             </tr>
@@ -78,5 +83,12 @@
         </tbody>
     </table>
 
+    {{-- CSV出力ボタン --}}
+    <div class="csv-action">
+        <a href="{{ route('admin.attendance.staff.csv', ['id' => $user->id, 'month' => $month->format('Y-m')]) }}"
+            class="csv-btn">
+             CSV出力
+        </a>
+    </div>
 </div>
 @endsection

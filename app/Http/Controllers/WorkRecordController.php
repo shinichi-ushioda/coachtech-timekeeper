@@ -143,8 +143,8 @@ class WorkRecordController extends Controller
              'work_date'    => $date,
          ], [
         // データベースの設計に合わせて、未打刻状態の初期値を設定（以下は例です）
-             'check_in'  => null, 
-             'check_out' => null,
+             'clock_in'  => null, 
+             'clock_out' => null,
         ]);
 
          // 自動作成された（または既存の）データの「id」を使って、設計書通りの詳細画面へリダイレクト
@@ -152,27 +152,40 @@ class WorkRecordController extends Controller
     }
 
     /**
-     * 申請一覧画面（PG06）
+     * 申請一覧画面（PG06 / PG12）
+     * 同じパス /stamp_correction_request/list を、ログインユーザーの種別で分岐する
      */
     public function correctionRequestList(Request $request)
     {
-         $userID = Auth::id();
+        $user = Auth::user();
 
-         //タブの状態（pending / approved）
-         $status = $request->input('status', 'pending');
+        // タブの状態（pending / approved）
+        $status = $request->input('status', 'pending');
 
-         //状態に応じて修正申請を取得
-         $correctionRequests = AttendanceCorrection::with('attendance')
-         ->where('status', $status) 
-         ->whereHas('attendance', function($query) use ($userID){
-            $query->where('user_id', $userID);
-        })
-         ->join('attendances', 'attendance_corrections.attendance_id', '=', 'attendances.id')
-         ->orderBy('attendances.work_date', 'asc') 
-         ->select('attendance_corrections.*')
-         ->get();
+        // 管理者：全ユーザーの申請を表示
+        if ($user->admin_status) {
+            $requests = AttendanceCorrection::with(['attendance.user'])
+                ->where('status', $status)
+                ->join('attendances', 'attendance_corrections.attendance_id', '=', 'attendances.id')
+                ->orderBy('attendances.work_date', 'asc')
+                ->select('attendance_corrections.*')
+                ->get();
 
-         return view('layouts.correction_request_list', compact('correctionRequests', 'status'));
+            return view('admin.correction_request_list', compact('requests', 'status'));
+        }
+
+        // 一般ユーザー：自分の申請のみ表示
+        $correctionRequests = AttendanceCorrection::with('attendance')
+            ->where('status', $status)
+            ->whereHas('attendance', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->join('attendances', 'attendance_corrections.attendance_id', '=', 'attendances.id')
+            ->orderBy('attendances.work_date', 'asc')
+            ->select('attendance_corrections.*')
+            ->get();
+
+        return view('layouts.correction_request_list', compact('correctionRequests', 'status'));
     }
 
     /**

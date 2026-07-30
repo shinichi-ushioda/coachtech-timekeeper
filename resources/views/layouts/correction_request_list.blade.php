@@ -58,7 +58,7 @@
                         <td>{{ $correction->reason }}</td>
 
                         {{-- 申請日時 --}}
-                        <td>{{ $correction->created_at->format('Y/m/d H:i') }}</td>
+                        <td>{{ $correction->created_at->format('Y/m/d') }}</td>
 
                         {{-- 詳細画面へのリンク --}}
                         <td>

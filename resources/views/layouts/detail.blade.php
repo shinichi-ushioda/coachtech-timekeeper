@@ -59,25 +59,30 @@
                 <tr>
                     <th>出勤・退勤</th>
                     <td class="time-range">
-                        @if(!$isPending)
-                            <input type="time" name="requested_clock_in" form="correctionForm"
-                                   class="input-time" value="{{ old('requested_clock_in', $clockIn) }}">
-                            <span class="wave">～</span>
-                            <input type="time" name="requested_clock_out" form="correctionForm"
-                                   class="input-time" value="{{ old('requested_clock_out', $clockOut) }}">
+                         @if(!$isPending)
+                             <div class="time-field">
+                                 <input type="time" name="requested_clock_in" form="correctionForm"
+                                      class="input-time" value="{{ old('requested_clock_in', $clockIn) }}">
+                                 @error('requested_clock_in')
+                                      <p class="error-message">{{ $message }}</p>
+                                 @enderror
+                             </div>
 
-                            @error('requested_clock_in')
-                                <p class="error-message">{{ $message }}</p>
-                            @enderror
-                            @error('requested_clock_out')
-                                <p class="error-message">{{ $message }}</p>
-                            @enderror
-                        @else
-                            <span class="text-display">{{ $clockIn }} ～ {{ $clockOut }}</span>
-                        @endif
+                             <span class="wave">～</span>
+
+                             <div class="time-field">
+                                 <input type="time" name="requested_clock_out" form="correctionForm"
+                                     class="input-time" value="{{ old('requested_clock_out', $clockOut) }}">
+                                 @error('requested_clock_out')
+                                     <p class="error-message">{{ $message }}</p>
+                                 @enderror
+                             </div>
+                         @else
+                             <span class="text-display">{{ $clockIn }} ～ {{ $clockOut }}</span>
+                         @endif
                     </td>
                 </tr>
-
+                
                 {{-- 休憩一覧 --}}
                 @if(!$isPending)
                     {{-- 編集モード：元の休憩レコードを入力欄で表示 --}}
