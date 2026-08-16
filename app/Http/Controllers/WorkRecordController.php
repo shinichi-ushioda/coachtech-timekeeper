@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Attendance;
 use App\Models\AttendanceCorrection;
@@ -14,7 +16,7 @@ class WorkRecordController extends Controller
         /**
      * 勤怠一覧画面（PG04）
      */
-    public function list(Request $request)
+    public function list(Request $request): View
     {
         $userId = Auth::id();
 
@@ -28,14 +30,13 @@ class WorkRecordController extends Controller
         $start = $monthObj->copy()->startOfMonth();
         $end   = $monthObj->copy()->endOfMonth();
 
-        // この月の勤怠を取得（休憩データ breaks も一緒に取得し、 work_date を確実に Y-m-d 形式の文字列にしてキーにする）
-        $attendances = Attendance::with('breaks') // 休憩時間計算のためにリレーションをロード
+        // この月の勤怠を取得（休憩データ breaks も一緒に取得）
+        $attendances = Attendance::with('breaks')
             ->where('user_id', $userId)
             ->whereBetween('work_date', [$start->format('Y-m-d'), $end->format('Y-m-d')])
             ->orderBy('work_date')
             ->get()
             ->keyBy(function($item) {
-                // $item->work_date が Carbon オブジェクトでも文字列でも、確実に 'Y-m-d' の文字列にする
                 return Carbon::parse($item->work_date)->format('Y-m-d');
             });
 
@@ -45,23 +46,18 @@ class WorkRecordController extends Controller
         while ($cursor <= $end) {
             $date = $cursor->format('Y-m-d');
             
-            // マップからデータを取得
             $attendance = $attendances->get($date);
 
-            // 【追加】ここで「休憩合計時間」と「合計勤務時間」を計算してBladeに渡すと楽になります
             $totalBreakMinutes = 0;
             $workTimeStr = '';
             $breakTimeStr = '';
 
             if ($attendance) {
-                // 休憩時間の計算（修正版）
+                // 休憩時間の計算
                 foreach ($attendance->breaks as $break) {
                      if ($break->break_in && $break->break_out) {
-                         // 変数名を「休憩開始」「休憩終了」として明確にする
                          $breakIn = Carbon::parse($break->break_in);
                          $breakOut = Carbon::parse($break->break_out);
-        
-                         // 休憩開始（基準）から、休憩終了までの差分（分）を足していく
                          $totalBreakMinutes += $breakIn->diffInMinutes($breakOut);
                      }
                 }
@@ -79,16 +75,12 @@ class WorkRecordController extends Controller
                      $clockIn = Carbon::parse($attendance->clock_in);
                      $clockOut = Carbon::parse($attendance->clock_out);
                     
-                     // 【修正】出勤時刻を基準にして、退勤時刻までの総滞在時間（分）を確実に「数値（int）」として取得
-                     $totalStayMinutes = (int)$clockIn->diffInMinutes($clockOut);
-                    
-                     // 総滞在時間から休憩時間を引く
+                     $totalStayMinutes = (int)$clockIn->diffInMinutes($clockOut);  
                      $totalWorkMinutes = $totalStayMinutes - (int)$totalBreakMinutes;
                      if ($totalWorkMinutes < 0) {
                         $totalWorkMinutes = 0;
                      }
 
-                     // H:i 形式の文字列に変換
                      $workTimeStr = sprintf('%02d:%02d', floor($totalWorkMinutes / 60), $totalWorkMinutes % 60);
                 }
 
@@ -97,8 +89,8 @@ class WorkRecordController extends Controller
             $days[] = [
                 'date' => $cursor->copy(),
                 'attendance' => $attendance,
-                'break_time' => $breakTimeStr, // Blade側で {{ $day['break_time'] }} で出せる
-                'work_time' => $workTimeStr,   // Blade側で {{ $day['work_time'] }} で出せる
+                'break_time' => $breakTimeStr,
+                'work_time' => $workTimeStr,
             ];
             $cursor->addDay();
         }
@@ -115,15 +107,19 @@ class WorkRecordController extends Controller
     /**
      * 勤怠詳細画面（PG05）
      */
-    public function detail($id)
+    public function detail(int $id): View|RedirectResponse
     {
-         // 勤怠データを取得
-         $attendance = Attendance::findOrFail($id);
+        // 勤怠データ・休憩・修正申請をまとめて取得
+        $attendance = Attendance::with(['breaks', 'correction'])->findOrFail($id);
 
-         // 休憩一覧
+        // 当日を含む未来の日付は詳細を開けない
+        if ($attendance->work_date->gte(Carbon::today())) {
+            return redirect()
+                ->route('attendance.list')
+                ->with('error', '当日以降の日付は登録できません。');
+        }
+
          $breaks = $attendance->breaks()->orderBy('break_in')->get();
-
-         // 修正申請（1件のみ）
          $request = $attendance->correction;
 
          return view('layouts.detail', [
@@ -133,21 +129,25 @@ class WorkRecordController extends Controller
          ]);
     }
 
-    // 中継用の処理
-    public function detailByDate($date)
+    /**
+     * 中継用の処理（勤怠が無い日の詳細）
+     */
+    public function detailByDate(string $date): RedirectResponse
     {
-         // ログイン中のユーザーの、その日付のデータを検索する
-         // もしデータが無ければ、その場でデータベースに新しいレコード（空の勤怠）を自動作成する
-         $attendance = Attendance::firstOrCreate([
+        // 当日を含む未来の日付は勤怠を作成・修正できない
+        if (Carbon::parse($date)->gte(Carbon::today())) {
+            return back()->with('error', '当日以降の日付は修正申請はできません。');
+        }
+
+        // その日付のデータを検索し、無ければ空の勤怠レコードを作成する
+        $attendance = Attendance::firstOrCreate([
              'user_id' => auth()->id(),
              'work_date'    => $date,
          ], [
-        // データベースの設計に合わせて、未打刻状態の初期値を設定（以下は例です）
              'clock_in'  => null, 
              'clock_out' => null,
         ]);
 
-         // 自動作成された（または既存の）データの「id」を使って、設計書通りの詳細画面へリダイレクト
          return redirect()->route('attendance.detail', ['id' => $attendance->id]);
     }
 
@@ -155,7 +155,7 @@ class WorkRecordController extends Controller
      * 申請一覧画面（PG06 / PG12）
      * 同じパス /stamp_correction_request/list を、ログインユーザーの種別で分岐する
      */
-    public function correctionRequestList(Request $request)
+    public function correctionRequestList(Request $request): View
     {
         $user = Auth::user();
 
@@ -191,28 +191,28 @@ class WorkRecordController extends Controller
     /**
      * 修正申請の保存（勤怠詳細画面からの POST）
      */
-public function correctionRequestStore(StampCorrectionRequest $request)
-{
-    // 1. 【超重要】バリデーションを実行し、フォームからのデータを確実にコントローラーに認識させます
-    $request->validate([
-        'attendance_id' => 'required',
-        'reason'        => 'required|string',
-    ]);
+    public function correctionRequestStore(StampCorrectionRequest $request): RedirectResponse
+    {
+        // 対象勤怠が当日を含む未来なら申請不可
+        $attendance = Attendance::findOrFail($request->attendance_id);
+        if ($attendance->work_date->gte(Carbon::today())) {
+            return back()->with('error', '当日以降の日付は修正申請はできません。');
+        }
 
-    // 2. 【仕様の強制】すでに同じ勤怠IDで「承認待ち（pending）」の申請がないかチェック
-    $exists = AttendanceCorrection::where('attendance_id', $request->attendance_id)
+        // すでに同じ勤怠IDで「承認待ち（pending）」の申請がないかチェック
+        $exists = AttendanceCorrection::where('attendance_id', $request->attendance_id)
         ->where('status', 'pending')
         ->exists();
 
-    if ($exists) {
-        return back()->with('error', '既に修正申請が提出されているため、再申請はできません。');
-    }
+        if ($exists) {
+            return back()->with('error', '既に修正申請が提出されているため、再申請はできません。');
+        }
 
-    // 3. 送られてきた休憩データを配列にまとめる処理
+    // 送られてきた休憩データを配列にまとめる処理
     $formattedBreaks = [];
 
      foreach ($request->input('requested_breaks', []) as $break) {
-        if (!empty($break['in']) && !empty($break['out'])) {
+        if (! empty($break['in']) && ! empty($break['out'])) {
             $formattedBreaks[] = [
                 'break_in'  => $break['in'],
                 'break_out' => $break['out'],
@@ -232,7 +232,6 @@ public function correctionRequestStore(StampCorrectionRequest $request)
         'attendance_id'       => $request->attendance_id,
         'requested_clock_in'  => $request->requested_clock_in,
         'requested_clock_out' => $request->requested_clock_out,
-        // casts の 'array' に任せるので json_encode はしない
         'requested_breaks'    => count($formattedBreaks) > 0 ? $formattedBreaks : null,
         'reason'              => $request->reason,
         'status'              => 'pending',

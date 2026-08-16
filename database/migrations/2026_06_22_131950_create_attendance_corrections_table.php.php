@@ -18,7 +18,7 @@ return new class extends Migration
              $table->datetime('requested_clock_out')->nullable();
              $table->json('requested_breaks')->nullable();
              $table->string('reason');
-             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+             $table->enum('status', ['pending', 'approved'])->default('pending');
              $table->datetime('approved_at')->nullable();
              $table->timestamps();
         });

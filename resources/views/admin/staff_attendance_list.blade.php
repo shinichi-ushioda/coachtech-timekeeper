@@ -10,6 +10,15 @@
         {{ $user->name }}さんの勤怠
     </h2>
 
+    {{-- フラッシュメッセージ --}}
+    @if(session('error'))
+        <p class="flash-error">{{ session('error') }}</p>
+    @endif
+
+    @if(session('message'))
+        <p class="flash-message">{{ session('message') }}</p>
+    @endif
+
     {{-- 月選択 --}}
     <div class="month-selector">
         <a href="{{ route('admin.attendance.staff', ['id' => $user->id, 'month' => $prevMonth]) }}" class="month-btn">
@@ -87,7 +96,7 @@
     <div class="csv-action">
         <a href="{{ route('admin.attendance.staff.csv', ['id' => $user->id, 'month' => $month->format('Y-m')]) }}"
             class="csv-btn">
-             CSV出力
+            CSV出力
         </a>
     </div>
 </div>

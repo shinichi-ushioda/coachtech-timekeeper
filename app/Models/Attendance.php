@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Attendance extends Model
 {
@@ -23,19 +26,19 @@ class Attendance extends Model
     ];
 
     // ユーザーとのリレーション
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
     // 休憩（breaks）とのリレーション
-    public function breaks()
+    public function breaks(): HasMany
     {
         return $this->hasMany(Breaks::class, 'attendance_id');
     }
 
     // 修正申請（attendance_）とのリレーション ※1日の修正申請は1回のみでルール化したのでhasOneとする。
-    public function correction()
+    public function correction(): HasOne
     {
         return $this->hasOne(AttendanceCorrection::class);
     }

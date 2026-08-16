@@ -59,36 +59,45 @@ class AttendancesTableSeeder extends Seeder
     }
 
     /**
-     * 当月：平日17日を取得し、パターンを割り当てて生成。
+     * 当月：当月初日から「昨日まで」の平日に勤怠を生成する。
+     *       ※当日を含む未来には勤怠を作らない。
+     *
+     * 日数が17日に満たない場合でも、遅刻・早退・長時間などの
+     * 異常パターンを優先的に配置し、残りを通常勤務で埋める。
      */
     private function seedCurrentMonth(User $user1): void
     {
-        // 割り当てるパターン（合計17）
-        $patterns = array_merge(
-            array_fill(0, 10, 'regular'),  // 通常   10
-            array_fill(0, 3,  'overtime'), // 残業    3
-            array_fill(0, 2,  'late'),     // 遅刻    2
-            ['early'],                     // 早退    1
+        // 異常パターンを先頭に置く（少ない日数でも確実に入るように）
+        $priorityPatterns = array_merge(
             ['longWork'],                  // 長時間  1
+            array_fill(0, 2, 'late'),      // 遅刻    2
+            ['early'],                     // 早退    1
+            array_fill(0, 3, 'overtime'),  // 残業    3
+            array_fill(0, 10, 'regular'),  // 通常   10
         );
 
-        $cursor = now()->startOfMonth();
-        $index  = 0;
+        // 当月初日から「昨日まで」の平日を集める（当日・未来は除外）
+        $weekdays  = [];
+        $cursor    = now()->startOfMonth();
+        $yesterday = now()->subDay()->startOfDay();
 
-        while ($index < count($patterns)) {
+        while ($cursor->lte($yesterday)) {
             if ($cursor->isWeekday()) {
-                $state = $patterns[$index];
-
-                Attendance::factory()
-                    ->{$state}()
-                    ->create([
-                        'user_id'   => $user1->id,
-                        'work_date' => $cursor->toDateString(),
-                    ]);
-
-                $index++;
+                $weekdays[] = $cursor->toDateString();
             }
             $cursor->addDay();
+        }
+
+        // 集めた平日の日数分だけ、先頭からパターンを割り当てる
+        foreach ($weekdays as $i => $date) {
+            $state = $priorityPatterns[$i] ?? 'regular';
+
+            Attendance::factory()
+                ->{$state}()
+                ->create([
+                    'user_id'   => $user1->id,
+                    'work_date' => $date,
+                ]);
         }
     }
 }
