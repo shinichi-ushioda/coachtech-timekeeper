@@ -1,11 +1,11 @@
 <?php
 
-use App\Http\Controllers\UserController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\WorkRecordController;
 use App\Http\Controllers\RegisteredUserController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AdminAttendanceController;
+use App\Http\Controllers\AttendanceReportController;
 use App\Http\Requests\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -97,4 +97,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // 修正申請の保存（勤怠詳細画面からの POST）
     Route::post('/stamp_correction_request/store',[WorkRecordController::class, 'correctionRequestStore'])->name('stamp_correction_request.store');
 
+    // マイ勤怠レポート画面（PG12）
+    Route::get('/attendance/report', [AttendanceReportController::class, 'index'])->name('attendance.report');
 });

@@ -7,14 +7,17 @@ use App\Models\AttendanceCorrection;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Contracts\View\View;
 use App\Http\Requests\AdminAttendanceUpdateRequest;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AdminAttendanceController extends Controller
 {
     /**
      * 勤怠一覧画面（PG08）その日の全ユーザー
      */
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         // 日付指定がなければ今日
         $date = $request->input('date')
@@ -44,7 +47,7 @@ class AdminAttendanceController extends Controller
      /**
      * スタッフ一覧画面（PG10）
      */
-     public function staffList()
+     public function staffList(): View
     {
          $users = User::where('admin_status', false)
              ->orderBy('id')
@@ -56,7 +59,7 @@ class AdminAttendanceController extends Controller
     /**
      * スタッフ別勤怠一覧画面（PG11）1ユーザーの1ヶ月分
      */
-    public function staff(Request $request, $id)
+    public function staff(Request $request, int $id): View
     {
         $user = User::findOrFail($id);
 
@@ -96,9 +99,13 @@ class AdminAttendanceController extends Controller
     /**
      * 勤怠が無い日の詳細（空レコードを作成してPG09へ）
      */
-    public function showByDate($user, $date)
+    public function showByDate(int $user, string $date): RedirectResponse
     {
-        // 念のため二重生成を防ぐ（既にあればそれを使う）
+        // 当日を含む未来の日付は勤怠を作成・修正できない
+        if (Carbon::parse($date)->gte(Carbon::today())) {
+            return back()->with('error', '当日以降の日付は修正できません。');
+        }
+
         $attendance = Attendance::firstOrCreate(
             [
                 'user_id'   => $user,
@@ -116,7 +123,7 @@ class AdminAttendanceController extends Controller
     /**
      * 勤怠詳細画面（管理者・PG09）
      */
-    public function show($id)
+    public function show(int $id): View
     {
         $attendance = Attendance::with(['user', 'breaks'])->findOrFail($id);
 
@@ -136,9 +143,14 @@ class AdminAttendanceController extends Controller
     /**
      * 勤怠詳細の更新（管理者による直接修正・PG09 / FN040）
      */
-    public function update(AdminAttendanceUpdateRequest $request, $id)
+    public function update(AdminAttendanceUpdateRequest $request, int $id): RedirectResponse
     {
         $attendance = Attendance::with('breaks')->findOrFail($id);
+
+        // 当日を含む未来の日付は修正できない
+        if ($attendance->work_date->gte(Carbon::today())) {
+            return back()->with('error', '当日以降の日付は修正できません。');
+        }
 
         // 出勤・退勤・備考を更新
         $attendance->update([
@@ -164,15 +176,21 @@ class AdminAttendanceController extends Controller
             ->with('flashSuccess', '勤怠情報を更新しました');
     }
 
-    public function adminCorrectionRequestShow($id)
+    /**
+     * 修正申請の承認画面（管理者・PG13）
+     */
+    public function adminCorrectionRequestShow(int $id): View
     {
          $correction = AttendanceCorrection::with(['attendance.user'])->findOrFail($id);
-         $isApproved = ($correction->status === 'approved'); // ← 実enum値に合わせる
+         $isApproved = ($correction->status === 'approved'); 
 
          return view('admin.approve', compact('correction', 'isApproved'));
     }
 
-    public function adminCorrectionRequestApprove($id)
+    /**
+     * 修正申請の承認処理（管理者・PG13 / FN051）
+     */
+    public function adminCorrectionRequestApprove(int $id): RedirectResponse
     {
         $correction = AttendanceCorrection::with('attendance')->findOrFail($id);
         $attendance = $correction->attendance;
@@ -208,7 +226,7 @@ class AdminAttendanceController extends Controller
     /**
      * スタッフ別勤怠一覧のCSV出力（PG11 / FN045）
      */
-    public function exportCsv(Request $request, $id)
+    public function exportCsv(Request $request, int $id): StreamedResponse
     {
         $user = User::findOrFail($id);
 

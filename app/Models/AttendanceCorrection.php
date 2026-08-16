@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AttendanceCorrection extends Model
 {
@@ -30,19 +31,17 @@ class AttendanceCorrection extends Model
     ];
 
     /**
-     * 勤怠（1 → 1 or 0）
-     * 1日の修正申請は1回だけという新仕様に対応
+     * 勤怠（多 → 1）
      */
-    public function attendance()
+    public function attendance(): BelongsTo
     {
         return $this->belongsTo(Attendance::class);
     }
 
     /**
-     * 休憩（1 → 1 or 0）
-     * 休憩の修正申請も1回だけという新仕様に対応
+     * 休憩（多 → 1）
      */
-    public function break()
+    public function break(): BelongsTo
     {
         return $this->belongsTo(Breaks::class);
     }

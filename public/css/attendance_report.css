@@ -1,0 +1,84 @@
+.report-wrapper {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 20px;
+}
+
+.report-section {
+    background: #fff;
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 24px;
+    font-weight: bold;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.report-section__title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 16px;
+}
+
+.summary-cards {
+    display: flex;
+    gap: 20px;
+}
+
+.summary-card {
+    flex: 1;
+    background: #f7f7f7;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: left;
+}
+
+.summary-card__label {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.summary-card__value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #000;
+}
+
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.report-table th,
+.report-table td {
+    padding: 12px;
+    border-bottom: 2px solid #f2f2f2;
+}
+
+/* 月次推移の1列目（月）だけ左寄せ */
+.report-table th:nth-child(1),
+.report-table td:nth-child(1) {
+    text-align: left;
+}
+
+.report-table th:nth-child(2),
+.report-table td:nth-child(2) {
+    text-align: right;
+}
+
+.report-table th:nth-child(3),
+.report-table td:nth-child(3) {
+    text-align: right;
+}
+
+.report-table th {
+    font-weight: bold;
+    color: #333;
+}
+
+.report-note {
+    font-size: 14px;
+    color: #2b2a2a;
+    margin-bottom: 16px;
+    font-weight: bold;
+}

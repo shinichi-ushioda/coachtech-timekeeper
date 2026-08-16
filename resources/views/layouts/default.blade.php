@@ -26,22 +26,25 @@
     {{-- 勤怠登録画面専用CSS（PG03） --}}
     <link rel="stylesheet" href="{{ asset('/css/attendance.css') }}">
 
-     {{-- 勤怠一覧画面専用CSS --}}
+    {{-- 勤怠一覧画面専用CSS --}}
     <link rel="stylesheet" href="{{ asset('/css/list.css') }}">
 
-     {{-- 勤怠詳細画面専用CSS --}}
+    {{-- 勤怠詳細画面専用CSS --}}
     <link rel="stylesheet" href="{{ asset('/css/detail.css') }}">
 
-     {{-- 申請一覧画面専用CSS --}}
-     <link rel="stylesheet" href="{{ asset('/css/correction_request_list.css') }}">
+    {{-- 申請一覧画面専用CSS --}}
+    <link rel="stylesheet" href="{{ asset('/css/correction_request_list.css') }}">
+
+    {{-- マイ勤怠レポート画面専用CSS --}}
+    <link rel="stylesheet" href="{{ asset('/css/attendance_report.css') }}">
     @yield('css')
 </head>
 
 <body>
 
-     {{-- ★ components/header.blade.php を読み込む --}}
+    {{-- ★ components/header.blade.php を読み込む --}}
     @include('components.header')
-    
+
     @yield('content')
 
     {{-- 共通JS --}}
@@ -56,7 +59,7 @@
         }
 
         @if(Session::has('flashSuccess'))
-            toastr.success("{{ session('flashSuccess') }}");
+             toastr.success("{{ session('flashSuccess') }}");
         @endif
     </script>
 </body>

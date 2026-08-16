@@ -12,8 +12,12 @@
     <h1 class="detail__heading"><span class="detail__bar"></span>勤怠詳細</h1>
 
     {{-- フラッシュメッセージ --}}
+    @if(session('error'))
+        <p class="flash-error">{{ session('error') }}</p>
+    @endif
+
     @if(session('flashSuccess'))
-    <p class="error-message" style="color:#2e7d32;">{{ session('flashSuccess') }}</p>
+        <p class="flash-message">{{ session('flashSuccess') }}</p>
     @endif
 
     <div class="detail__panel">
