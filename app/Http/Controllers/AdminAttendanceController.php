@@ -43,17 +43,17 @@ class AdminAttendanceController extends Controller
             'nextDate'    => $date->copy()->addDay()->toDateString(),
         ]);
     }
-    
-     /**
+
+    /**
      * スタッフ一覧画面（PG10）
      */
-     public function staffList(): View
+    public function staffList(): View
     {
-         $users = User::where('admin_status', false)
-             ->orderBy('id')
-             ->get();
+        $users = User::where('admin_status', false)
+            ->orderBy('id')
+            ->get();
 
-         return view('admin.staff_list', compact('users'));
+        return view('admin.staff_list', compact('users'));
     }
 
     /**
@@ -76,7 +76,7 @@ class AdminAttendanceController extends Controller
                 $month->copy()->endOfMonth()->toDateString(),
             ])
             ->get()
-            ->keyBy(fn ($item) => $item->work_date->toDateString());
+            ->keyBy(fn($item) => $item->work_date->toDateString());
 
         // 月の全日付を生成（勤怠が無い日も行として表示するため）
         $days = [];
@@ -181,10 +181,10 @@ class AdminAttendanceController extends Controller
      */
     public function adminCorrectionRequestShow(int $id): View
     {
-         $correction = AttendanceCorrection::with(['attendance.user'])->findOrFail($id);
-         $isApproved = ($correction->status === 'approved'); 
+        $correction = AttendanceCorrection::with(['attendance.user'])->findOrFail($id);
+        $isApproved = ($correction->status === 'approved');
 
-         return view('admin.approve', compact('correction', 'isApproved'));
+        return view('admin.approve', compact('correction', 'isApproved'));
     }
 
     /**

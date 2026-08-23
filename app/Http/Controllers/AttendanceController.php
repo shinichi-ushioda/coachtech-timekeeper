@@ -35,15 +35,14 @@ class AttendanceController extends Controller
             } else {
                 $attendanceStatus = 'after_clock_in'; // 出勤中
             }
-
         } else {
             $attendanceStatus = 'after_clock_out'; // 退勤済
         }
 
         return view('layouts.attendance', [
-        'attendance' => $attendance,
-        'attendanceStatus' => $attendanceStatus, // これが超重要
-    ]);
+            'attendance' => $attendance,
+            'attendanceStatus' => $attendanceStatus, // これが超重要
+        ]);
     }
 
     /**

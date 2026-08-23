@@ -96,7 +96,7 @@ Mailtrap の InboxID は、Mailtrap の「Email Testing → Inboxes」から確�
 
 
 ## ER図
-![alt](ER.png)
+![alt](public/er.png)
 
 ## テストアカウント
 name: ユーザー１（一般）  
@@ -121,11 +121,20 @@ password: password
 docker-compose exec mysql bash
 mysql -u root -p
 //パスワードはrootと入力
-create database test_database;
+create database test_database;## PHPUnitを利用したテストに関して
+
+本プロジェクトのテストは、SQLiteのインメモリデータベースを使用します。
+`phpunit.xml` にて `DB_CONNECTION=sqlite` / `DB_DATABASE=:memory:` を設定しているため、
+テスト用データベースを別途作成する必要はありません。
+
+以下のコマンドでテストを実行できます。
 
 docker-compose exec php bash
-php artisan migrate:fresh --env=testing
-./vendor/bin/phpunit
+php artisan test
+
+特定のテストのみ実行する場合:  
+php artisan test --filter=RegisterTest
+
 ```
 
 ## 補足：要件シートとの対応
@@ -151,7 +160,7 @@ N+1対策（Eager Loading）は、以下の該当箇所すべてで `with()` を
 
 上記の日付で修正・申請を行おうとした場合は、処理は実行されず、画面にエラーメッセージが表示されます。
 
-なお、ダミーデータ（シーダー）も当日を含む未来の日付には勤怠を生成しません。そのため、当月分の勤怠データは実行日の前日までの平日で生成されます。
+なお、ダミーデータ（シーダー）は当日を含む未来の日付の勤怠を生成できるようにしています。
 
 ## 公開API
 
@@ -198,13 +207,14 @@ php artisan tinker
 
 ```json
 {
-    "user_id": 1,
     "date": "2026-07-01",
     "clock_in": "09:00:00",
     "clock_out": "18:00:00",
     "comment": "備考"
 }
 ```
+
+※ `user_id` はリクエストで指定しません。認証済みユーザーから自動的に付与されます。
 
 ### レスポンス例
 
@@ -216,16 +226,34 @@ php artisan tinker
         {
             "id": 1,
             "user_id": 1,
-            "work_date": "2026-07-01",
+            "user": {
+                "id": 1,
+                "name": "ユーザー1"
+            },
+            "date": "2026-07-01",
             "clock_in": "09:00:00",
-            "clock_out": "18:00:00"
+            "clock_out": "18:00:00",
+            "total_time": "08:00",
+            "total_break_time": "01:00",
+            "comment": null,
+            "breaks": [
+                {
+                    "id": 1,
+                    "break_in": "12:00:00",
+                    "break_out": "13:00:00"
+                }
+            ],
+            "applications": []
         }
     ],
+    "links": [],
     "meta": {
         "current_page": 1,
-        "last_page": 9,
+        "from": 1,
+        "last_page": 5,
         "per_page": 20,
-        "total": 88
+        "to": 20,
+        "total": 92
     }
 }
 ```
@@ -244,3 +272,24 @@ php artisan tinker
 
 ### 備考
 URLは要件どおり attendance-records だが、内部のテーブルは attendances を使用しています。
+
+## 公開APIのレスポンス仕様に関する補足
+
+### レスポンスのフィールド構成について
+
+要件シートには、APIレスポンスに関して2種類の記述があります。
+
+1. 「API Resource の構造」の表では、一覧API（index）と詳細API（show）で同一の `AttendanceRecordResource` を共用し、`whenLoaded()` によって `user` / `breaks` / `applications` のみを出し分ける、とされています。
+2. 一方、AP01（一覧）とAP02（詳細）のレスポンスボディ例では、一覧と詳細で一部のフィールド構成が異なって記載されています。
+
+本実装では、前者の「同一Resourceを共用し、whenLoadedで関連データのみ出し分ける」という設計方針を採用しています。そのため、`user_id` / `total_time` / `total_break_time` などの関連データ以外のフィールドは、一覧・詳細のどちらのレスポンスにも共通して含まれます。
+
+これは、Resourceを一元管理して保守性を高める意図によるものです。`whenLoaded()` で出し分けているのは、要件シートの「API Resource の構造」で指定されたとおり、`user` / `breaks` / `applications` の関連データのみです。
+
+### 一覧APIのbreaksについて
+
+一覧API（GET /api/v1/attendance-records）のレスポンスにも `breaks`（休憩明細）を含めています。これは、`total_break_time` の算出に必要な休憩データを N+1問題を防ぐために Eager Loading（`with('breaks')`）しており、読み込んだデータが `whenLoaded('breaks')` によってレスポンスに含まれるためです。
+
+### applicationsの項目について
+
+`applications`（修正申請）の各項目の詳細仕様は要件シートに明記がないため、修正申請の主要な項目（`id` / `requested_clock_in` / `requested_clock_out` / `reason` / `status`）を、他フィールドと同様の形式（時刻は HH:MM:SS 形式）に整形して返す実装としています。

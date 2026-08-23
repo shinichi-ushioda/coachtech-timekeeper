@@ -22,15 +22,15 @@
 
         <tbody>
             @foreach($users as $user)
-                <tr>
-                    <td>{{ $user->name }}</td>
-                    <td>{{ $user->email }}</td>
-                    <td>
-                        <a href="{{ route('admin.attendance.staff', ['id' => $user->id]) }}" class="detail-btn">
-                            詳細
-                        </a>
-                    </td>
-                </tr>
+            <tr>
+                <td>{{ $user->name }}</td>
+                <td>{{ $user->email }}</td>
+                <td>
+                    <a href="{{ route('admin.attendance.staff', ['id' => $user->id]) }}" class="detail-btn">
+                        詳細
+                    </a>
+                </td>
+            </tr>
             @endforeach
         </tbody>
     </table>

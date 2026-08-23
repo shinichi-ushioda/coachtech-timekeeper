@@ -12,17 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('attendance_corrections', function (Blueprint $table) {
-             $table->id();
-             $table->foreignId('attendance_id')->constrained()->cascadeOnDelete();
-             $table->datetime('requested_clock_in')->nullable();
-             $table->datetime('requested_clock_out')->nullable();
-             $table->json('requested_breaks')->nullable();
-             $table->string('reason');
-             $table->enum('status', ['pending', 'approved'])->default('pending');
-             $table->datetime('approved_at')->nullable();
-             $table->timestamps();
+            $table->id();
+            $table->foreignId('attendance_id')->constrained()->cascadeOnDelete();
+            $table->datetime('requested_clock_in')->nullable();
+            $table->datetime('requested_clock_out')->nullable();
+            $table->json('requested_breaks')->nullable();
+            $table->enum('status', ['pending', 'approved'])->default('pending');
+            $table->string('reason');
+            $table->datetime('approved_at')->nullable();
+            $table->timestamps();
         });
-
     }
 
     /**

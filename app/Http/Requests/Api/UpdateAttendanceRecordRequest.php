@@ -26,7 +26,6 @@ class UpdateAttendanceRecordRequest extends FormRequest
         $id = $this->route('attendanceRecord');
 
         return [
-            'user_id' => ['required', 'integer', 'exists:users,id'],
             'date' => [
                 'required',
                 'date_format:Y-m-d',

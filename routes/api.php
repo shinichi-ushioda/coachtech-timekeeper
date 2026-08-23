@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\AttendanceRecordController;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+
 Route::prefix('v1')->group(function () {
     // 読み取り系（認証不要）
     Route::get('/attendance-records', [AttendanceRecordController::class, 'index']);

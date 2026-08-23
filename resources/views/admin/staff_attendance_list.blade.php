@@ -12,11 +12,11 @@
 
     {{-- フラッシュメッセージ --}}
     @if(session('error'))
-        <p class="flash-error">{{ session('error') }}</p>
+    <p class="flash-error">{{ session('error') }}</p>
     @endif
 
     @if(session('message'))
-        <p class="flash-message">{{ session('message') }}</p>
+    <p class="flash-message">{{ session('message') }}</p>
     @endif
 
     {{-- 月選択 --}}
