@@ -59,7 +59,7 @@
         }
 
         @if(Session::has('flashSuccess'))
-             toastr.success("{{ session('flashSuccess') }}");
+        toastr.success("{{ session('flashSuccess') }}");
         @endif
     </script>
 </body>

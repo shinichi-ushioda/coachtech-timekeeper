@@ -38,6 +38,5 @@ class UsersTableSeeder extends Seeder
             'admin_status' => true,
         ];
         User::create($param);
-
     }
 }

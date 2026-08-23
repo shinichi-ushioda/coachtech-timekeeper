@@ -15,7 +15,8 @@ use Laravel\Fortify\Fortify;
 // 認証誘導画面は auth のみ（verified を付けない）
 Route::middleware(['auth'])->group(function () {
     Route::get('/email/verify', function () {
-        return view('auth.verify_email');})->name('verification.notice');
+        return view('auth.verify_email');
+    })->name('verification.notice');
 });
 
 // 管理者ログイン画面の表示（画面表示のみ自前）
@@ -26,7 +27,7 @@ Route::post('/admin/login', [AuthenticatedSessionController::class, 'store']);
 Route::middleware(['auth', 'admin'])->group(function () {
     // 勤怠一覧画面（PG08）
     Route::get('/admin/attendance/list', [AdminAttendanceController::class, 'index'])->name('admin.attendance.list');
-    
+
     // スタッフ一覧画面（PG10）
     Route::get('/admin/staff/list', [AdminAttendanceController::class, 'staffList'])->name('admin.staff.list');
 
@@ -48,18 +49,22 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::patch('/admin/attendance/{id}', [AdminAttendanceController::class, 'update'])->name('admin.attendance.update');
 
     // 申請詳細画面（管理者用）
-    Route::get('/admin/stamp_correction_request/{attendance_correct_request}',[AdminAttendanceController::class, 'adminCorrectionRequestShow'])->name('adminstamp_correction_request.show');
+    Route::get('/admin/stamp_correction_request/{attendance_correct_request}', [AdminAttendanceController::class, 'adminCorrectionRequestShow'])->name('adminstamp_correction_request.show');
 
     // 申請承認処理（管理者用）
-    Route::post('/admin/stamp_correction_request/{attendance_correct_request}/approve',[AdminAttendanceController::class, 'adminCorrectionRequestApprove'])->name('admin.stamp_correction_request.approve');
+    Route::post('/admin/stamp_correction_request/{attendance_correct_request}/approve', [AdminAttendanceController::class, 'adminCorrectionRequestApprove'])->name('admin.stamp_correction_request.approve');
 
     // 修正申請承認画面（管理者・PG13）表示
     Route::get(
-        '/stamp_correction_request/approve/{attendance_correct_request}',[AdminAttendanceController::class, 'adminCorrectionRequestShow'])->name('admin.requests.show');
+        '/stamp_correction_request/approve/{attendance_correct_request}',
+        [AdminAttendanceController::class, 'adminCorrectionRequestShow']
+    )->name('admin.requests.show');
 
     // 修正申請の承認処理（PG13のボタン送信先）
     Route::post(
-        '/stamp_correction_request/approve/{attendance_correct_request}',[AdminAttendanceController::class, 'adminCorrectionRequestApprove'])->name('admin.requests.approve');
+        '/stamp_correction_request/approve/{attendance_correct_request}',
+        [AdminAttendanceController::class, 'adminCorrectionRequestApprove']
+    )->name('admin.requests.approve');
 });
 
 // メール認証済みでないと入れない画面群
@@ -68,21 +73,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     //勤怠登録画面（出勤）
     Route::post('/attendance/clock_in', [AttendanceController::class, 'clockIn'])
-    ->name('attendance.clock_in');
+        ->name('attendance.clock_in');
 
     //勤怠登録画面（退勤）
     Route::post('/attendance/clock_out', [AttendanceController::class, 'clockOut'])
-    ->name('attendance.clock_out');
+        ->name('attendance.clock_out');
 
     //勤怠登録画面（休憩開始）
     Route::post('/attendance/break_in', [AttendanceController::class, 'breakIn'])
-    ->name('attendance.break_in');
+        ->name('attendance.break_in');
 
     //勤怠登録画面（休憩終了）
     Route::post('/attendance/break_out', [AttendanceController::class, 'breakOut'])
-    ->name('attendance.break_out');
+        ->name('attendance.break_out');
 
-    //勤怠一覧画面
+    //勤怠一覧画面　
     Route::get('/attendance/list', [WorkRecordController::class, 'list'])->name('attendance.list');
 
     //勤怠詳細画面（PG05）
@@ -91,11 +96,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     //勤怠詳細画面（勤務していない日用のURL）
     Route::get('/attendance/detail/date/{date}', [WorkRecordController::class, 'detailByDate'])->name('attendance.detail.date');
 
-    //申請一覧画面
+    //申請一覧画面　
     Route::get('/stamp_correction_request/list', [WorkRecordController::class, 'correctionRequestList'])->name('stamp_correction_request.list');
-    
+
     // 修正申請の保存（勤怠詳細画面からの POST）
-    Route::post('/stamp_correction_request/store',[WorkRecordController::class, 'correctionRequestStore'])->name('stamp_correction_request.store');
+    Route::post('/stamp_correction_request/store', [WorkRecordController::class, 'correctionRequestStore'])->name('stamp_correction_request.store');
 
     // マイ勤怠レポート画面（PG12）
     Route::get('/attendance/report', [AttendanceReportController::class, 'index'])->name('attendance.report');

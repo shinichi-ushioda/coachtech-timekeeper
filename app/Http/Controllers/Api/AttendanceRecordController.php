@@ -18,41 +18,44 @@ class AttendanceRecordController extends Controller
      * 勤怠一覧（GET /api/v1/attendance-records）
      */
     public function index(Request $request)
-    {   
-        $query = Attendance::query();
+    {
+        $query = Attendance::query()->with(['user', 'breaks']);
 
         // user_id で絞り込み
-        if ($request->filled('user_id')){
+        if ($request->filled('user_id')) {
             $query->where('user_id', $request->user_id);
         }
 
         // date(特定日)で絞り込み
-        if ($request->filled('date')){
+        if ($request->filled('date')) {
             $query->whereDate('work_date', $request->date);
         }
 
         // month(特定月)で絞り込み
-        if($request->filled('month')){
+        if ($request->filled('month')) {
             $query->where('work_date', 'like', $request->month . '%');
         }
 
         // per_page(デフォルト20、最大100)
         $perPage = (int) $request->input('per_page', 20);
-        if ($perPage > 100){
+        if ($perPage > 100) {
             $perPage = 100;
         }
 
         $records = $query->paginate($perPage);
-        
+
         return response()->json([
             'data' => AttendanceRecordResource::collection($records->items()),
+            'links' => [],
             'meta' => [
                 'current_page' => $records->currentPage(),
-                'last_page' => $records->lastPage(),
-                'per_page' => $records->perPage(),
-                'total' => $records->total(),
+                'from'         => $records->firstItem(),
+                'last_page'    => $records->lastPage(),
+                'per_page'     => $records->perPage(),
+                'to'           => $records->lastItem(),
+                'total'        => $records->total(),
             ],
-        ]); 
+        ]);
     }
 
     /**
@@ -62,13 +65,13 @@ class AttendanceRecordController extends Controller
     {
         $record = Attendance::with(['user', 'breaks', 'correction'])->find($attendanceRecord);
 
-        if (!$record){
+        if (!$record) {
             return response()->json([
                 'error' => '勤怠情報が見つかりませんでした。',
             ], 404, [], JSON_UNESCAPED_UNICODE);
         }
 
-            return new AttendanceRecordResource($record);
+        return new AttendanceRecordResource($record);
     }
 
     /**
@@ -78,17 +81,20 @@ class AttendanceRecordController extends Controller
     {
         $date = $request->date;
 
-        $attendance = Attendance::create([
-            'user_id'   => $request->user_id,
+        // 認証ユーザーから勤怠を作成（user_id を自動付与）
+        $attendance = $request->user()->attendances()->create([
             'work_date' => $date,
             'clock_in'  => $date . ' ' . $request->clock_in,
             'clock_out' => $request->clock_out ? $date . ' ' . $request->clock_out : null,
             'comment'   => $request->comment,
         ]);
-            return response()->json([
-                'data' => new AttendanceRecordResource($attendance),
-            ], 201);
-    }    
+
+        $attendance->load(['user', 'breaks']);
+
+        return (new AttendanceRecordResource($attendance))
+            ->response()
+            ->setStatusCode(201);
+    }
 
 
     /**
@@ -130,14 +136,14 @@ class AttendanceRecordController extends Controller
     {
         $record = Attendance::find($attendanceRecord);
 
-        if(! $record){
+        if (! $record) {
             return response()->json([
                 'error' => '勤怠情報が見つかりませんでした。',
             ], 404, [], JSON_UNESCAPED_UNICODE);
         }
 
         // 権限チェック：自分の勤怠でなければ403を返す
-        $this->authorize('delete', $record);        
+        $this->authorize('delete', $record);
 
         $record->delete();
 

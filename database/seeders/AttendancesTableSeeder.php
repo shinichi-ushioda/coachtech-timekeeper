@@ -76,21 +76,24 @@ class AttendancesTableSeeder extends Seeder
             array_fill(0, 10, 'regular'),  // 通常   10
         );
 
-        // 当月初日から「昨日まで」の平日を集める（当日・未来は除外）
-        $weekdays  = [];
-        $cursor    = now()->startOfMonth();
-        $yesterday = now()->subDay()->startOfDay();
+        // 必要な日数（パターンの数 = 17日）
+        $needed = count($priorityPatterns);
 
-        while ($cursor->lte($yesterday)) {
+        // 当月初日から「月末まで」の平日を集める（当日・未来も含む）
+        $weekdays = [];
+        $cursor   = now()->startOfMonth();
+
+        while (count($weekdays) < $needed) {
             if ($cursor->isWeekday()) {
                 $weekdays[] = $cursor->toDateString();
             }
             $cursor->addDay();
         }
 
+
         // 集めた平日の日数分だけ、先頭からパターンを割り当てる
         foreach ($weekdays as $i => $date) {
-            $state = $priorityPatterns[$i] ?? 'regular';
+            $state = $priorityPatterns[$i];
 
             Attendance::factory()
                 ->{$state}()
@@ -101,4 +104,3 @@ class AttendancesTableSeeder extends Seeder
         }
     }
 }
-

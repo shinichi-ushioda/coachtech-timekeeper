@@ -13,7 +13,7 @@ use App\Http\Requests\StampCorrectionRequest;
 
 class WorkRecordController extends Controller
 {
-        /**
+    /**
      * 勤怠一覧画面（PG04）
      */
     public function list(Request $request): View
@@ -36,7 +36,7 @@ class WorkRecordController extends Controller
             ->whereBetween('work_date', [$start->format('Y-m-d'), $end->format('Y-m-d')])
             ->orderBy('work_date')
             ->get()
-            ->keyBy(function($item) {
+            ->keyBy(function ($item) {
                 return Carbon::parse($item->work_date)->format('Y-m-d');
             });
 
@@ -45,7 +45,7 @@ class WorkRecordController extends Controller
         $cursor = $start->copy();
         while ($cursor <= $end) {
             $date = $cursor->format('Y-m-d');
-            
+
             $attendance = $attendances->get($date);
 
             $totalBreakMinutes = 0;
@@ -55,14 +55,14 @@ class WorkRecordController extends Controller
             if ($attendance) {
                 // 休憩時間の計算
                 foreach ($attendance->breaks as $break) {
-                     if ($break->break_in && $break->break_out) {
-                         $breakIn = Carbon::parse($break->break_in);
-                         $breakOut = Carbon::parse($break->break_out);
-                         $totalBreakMinutes += $breakIn->diffInMinutes($breakOut);
-                     }
+                    if ($break->break_in && $break->break_out) {
+                        $breakIn = Carbon::parse($break->break_in);
+                        $breakOut = Carbon::parse($break->break_out);
+                        $totalBreakMinutes += $breakIn->diffInMinutes($breakOut);
+                    }
                 }
 
-                
+
                 // 休憩時間を H:i 形式に
                 if ($totalBreakMinutes > 0) {
                     $breakTimeStr = sprintf('%02d:%02d', floor($totalBreakMinutes / 60), $totalBreakMinutes % 60);
@@ -72,18 +72,17 @@ class WorkRecordController extends Controller
 
                 // 実働時間の計算（退勤している場合のみ）
                 if ($attendance->clock_in && $attendance->clock_out) {
-                     $clockIn = Carbon::parse($attendance->clock_in);
-                     $clockOut = Carbon::parse($attendance->clock_out);
-                    
-                     $totalStayMinutes = (int)$clockIn->diffInMinutes($clockOut);  
-                     $totalWorkMinutes = $totalStayMinutes - (int)$totalBreakMinutes;
-                     if ($totalWorkMinutes < 0) {
+                    $clockIn = Carbon::parse($attendance->clock_in);
+                    $clockOut = Carbon::parse($attendance->clock_out);
+
+                    $totalStayMinutes = (int)$clockIn->diffInMinutes($clockOut);
+                    $totalWorkMinutes = $totalStayMinutes - (int)$totalBreakMinutes;
+                    if ($totalWorkMinutes < 0) {
                         $totalWorkMinutes = 0;
-                     }
+                    }
 
-                     $workTimeStr = sprintf('%02d:%02d', floor($totalWorkMinutes / 60), $totalWorkMinutes % 60);
+                    $workTimeStr = sprintf('%02d:%02d', floor($totalWorkMinutes / 60), $totalWorkMinutes % 60);
                 }
-
             }
 
             $days[] = [
@@ -119,14 +118,14 @@ class WorkRecordController extends Controller
                 ->with('error', '当日以降の日付は登録できません。');
         }
 
-         $breaks = $attendance->breaks()->orderBy('break_in')->get();
-         $request = $attendance->correction;
+        $breaks = $attendance->breaks()->orderBy('break_in')->get();
+        $request = $attendance->correction;
 
-         return view('layouts.detail', [
-             'attendance' => $attendance,
-             'breaks' => $breaks,
-             'request' => $request,
-         ]);
+        return view('layouts.detail', [
+            'attendance' => $attendance,
+            'breaks' => $breaks,
+            'request' => $request,
+        ]);
     }
 
     /**
@@ -141,14 +140,14 @@ class WorkRecordController extends Controller
 
         // その日付のデータを検索し、無ければ空の勤怠レコードを作成する
         $attendance = Attendance::firstOrCreate([
-             'user_id' => auth()->id(),
-             'work_date'    => $date,
-         ], [
-             'clock_in'  => null, 
-             'clock_out' => null,
+            'user_id' => auth()->id(),
+            'work_date'    => $date,
+        ], [
+            'clock_in'  => null,
+            'clock_out' => null,
         ]);
 
-         return redirect()->route('attendance.detail', ['id' => $attendance->id]);
+        return redirect()->route('attendance.detail', ['id' => $attendance->id]);
     }
 
     /**
@@ -201,43 +200,42 @@ class WorkRecordController extends Controller
 
         // すでに同じ勤怠IDで「承認待ち（pending）」の申請がないかチェック
         $exists = AttendanceCorrection::where('attendance_id', $request->attendance_id)
-        ->where('status', 'pending')
-        ->exists();
+            ->where('status', 'pending')
+            ->exists();
 
         if ($exists) {
             return back()->with('error', '既に修正申請が提出されているため、再申請はできません。');
         }
 
-    // 送られてきた休憩データを配列にまとめる処理
-    $formattedBreaks = [];
+        // 送られてきた休憩データを配列にまとめる処理
+        $formattedBreaks = [];
 
-     foreach ($request->input('requested_breaks', []) as $break) {
-        if (! empty($break['in']) && ! empty($break['out'])) {
+        foreach ($request->input('requested_breaks', []) as $break) {
+            if (! empty($break['in']) && ! empty($break['out'])) {
+                $formattedBreaks[] = [
+                    'break_in'  => $break['in'],
+                    'break_out' => $break['out'],
+                ];
+            }
+        }
+
+        $newBreak = $request->input('requested_breaks_new', []);
+        if (!empty($newBreak['in']) && !empty($newBreak['out'])) {
             $formattedBreaks[] = [
-                'break_in'  => $break['in'],
-                'break_out' => $break['out'],
+                'break_in'  => $newBreak['in'],
+                'break_out' => $newBreak['out'],
             ];
         }
+
+        AttendanceCorrection::create([
+            'attendance_id'       => $request->attendance_id,
+            'requested_clock_in'  => $request->requested_clock_in,
+            'requested_clock_out' => $request->requested_clock_out,
+            'requested_breaks'    => count($formattedBreaks) > 0 ? $formattedBreaks : null,
+            'reason'              => $request->reason,
+            'status'              => 'pending',
+        ]);
+
+        return back()->with('message', '修正申請を送信しました。');
     }
-
-    $newBreak = $request->input('requested_breaks_new', []);
-    if (!empty($newBreak['in']) && !empty($newBreak['out'])) {
-        $formattedBreaks[] = [
-            'break_in'  => $newBreak['in'],
-            'break_out' => $newBreak['out'],
-        ];
-    }
-
-    AttendanceCorrection::create([
-        'attendance_id'       => $request->attendance_id,
-        'requested_clock_in'  => $request->requested_clock_in,
-        'requested_clock_out' => $request->requested_clock_out,
-        'requested_breaks'    => count($formattedBreaks) > 0 ? $formattedBreaks : null,
-        'reason'              => $request->reason,
-        'status'              => 'pending',
-    ]);
-
-    return back()->with('message', '修正申請を送信しました。');
-}
-
 }

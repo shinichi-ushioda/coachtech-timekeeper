@@ -64,13 +64,13 @@
                 {{-- 詳細ボタン --}}
                 <td>
                     @if($attendance)
-                         <a href="/admin/attendance/{{ $attendance->id }}" class="detail-btn">
-                             詳細
-                         </a>
+                    <a href="/admin/attendance/{{ $attendance->id }}" class="detail-btn">
+                        詳細
+                    </a>
                     @else
-                         <a href="{{ route('admin.attendance.showByDate', ['user' => $user->id, 'date' => $date->format('Y-m-d')]) }}" class="detail-btn">
-                              詳細
-                         </a>
+                    <a href="{{ route('admin.attendance.showByDate', ['user' => $user->id, 'date' => $date->format('Y-m-d')]) }}" class="detail-btn">
+                        詳細
+                    </a>
                     @endif
                 </td>
             </tr>

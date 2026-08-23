@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Attendance;
 use App\Models\Breaks;
 use Carbon\Carbon;
+
 /**
  * @extends Factory<Model>
  */
@@ -52,7 +53,7 @@ class AttendanceFactory extends Factory
     /** 通常勤務 9:00-18:00（休憩1h -> 実働8h） */
     public function regular(): static
     {
-        return $this->state(fn () => [
+        return $this->state(fn() => [
             'clock_in'  => '09:00',
             'clock_out' => '18:00',
         ]);
@@ -61,7 +62,7 @@ class AttendanceFactory extends Factory
     /** 残業 9:00-20:00（実働10h / 8h超過分2h） */
     public function overtime(): static
     {
-        return $this->state(fn () => [
+        return $this->state(fn() => [
             'clock_in'  => '09:00',
             'clock_out' => '20:00',
         ]);
@@ -70,7 +71,7 @@ class AttendanceFactory extends Factory
     /** 遅刻 9:30-18:00（始業09:00超過） */
     public function late(): static
     {
-        return $this->state(fn () => [
+        return $this->state(fn() => [
             'clock_in'  => '09:30',
             'clock_out' => '18:00',
         ]);
@@ -79,7 +80,7 @@ class AttendanceFactory extends Factory
     /** 早退 9:00-17:00（終業18:00より前） */
     public function early(): static
     {
-        return $this->state(fn () => [
+        return $this->state(fn() => [
             'clock_in'  => '09:00',
             'clock_out' => '17:00',
         ]);
@@ -88,7 +89,7 @@ class AttendanceFactory extends Factory
     /** 長時間労働 8:00-21:00（実働12h / 1日10時間超） */
     public function longWork(): static
     {
-        return $this->state(fn () => [
+        return $this->state(fn() => [
             'clock_in'  => '08:00',
             'clock_out' => '21:00',
         ]);

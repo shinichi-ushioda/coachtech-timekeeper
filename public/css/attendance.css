@@ -28,7 +28,7 @@ body {
     margin-bottom: 10px;
 }
 
-/* 状態ラベル（勤務外・勤務中・休憩中・退勤済） */
+/* 状態ラベル（出勤・出勤中・休憩中・退勤済） */
 .status-label span {
     display: inline-block;
     background-color: #e0e0e0; 

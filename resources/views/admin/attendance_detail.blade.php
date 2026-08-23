@@ -13,11 +13,11 @@
 
     {{-- フラッシュメッセージ --}}
     @if(session('error'))
-        <p class="flash-error">{{ session('error') }}</p>
+    <p class="flash-error">{{ session('error') }}</p>
     @endif
 
     @if(session('flashSuccess'))
-        <p class="flash-message">{{ session('flashSuccess') }}</p>
+    <p class="flash-message">{{ session('flashSuccess') }}</p>
     @endif
 
     <div class="detail__panel">

@@ -16,7 +16,7 @@
     @if(session('message'))
     <p class="flash-message">{{ session('message') }}</p>
     @endif
-    
+
     {{-- 月選択（白背景） --}}
     <div class="month-selector">
         <a href="{{ route('attendance.list', ['month' => $prevMonth]) }}" class="month-btn">

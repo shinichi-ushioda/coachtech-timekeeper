@@ -4,6 +4,7 @@ namespace App\Http\Requests\Api;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreAttendanceRecordRequest extends FormRequest
 {
@@ -23,8 +24,13 @@ class StoreAttendanceRecordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'user_id'   => ['required', 'integer', 'exists:users,id'],
-            'date'      => ['required', 'date_format:Y-m-d', 'unique:attendances,work_date,NULL,id,user_id,' . $this->input('user_id')],
+            'date'      => [
+                'required',
+                'date_format:Y-m-d',
+                // 認証ユーザーの中で日付が重複しないか
+                Rule::unique('attendances', 'work_date')
+                    ->where('user_id', $this->user()->id),
+            ],
             'clock_in'  => ['required', 'date_format:H:i:s'],
             'clock_out' => ['nullable', 'date_format:H:i:s', 'after:clock_in'],
             'comment'   => ['nullable', 'string', 'max:255'],

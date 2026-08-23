@@ -23,4 +23,15 @@ class AttendancePolicy
     {
         return $user->id === $attendance->user_id;
     }
+
+    /**
+     * 管理者は全ての操作を許可（本人チェックより優先される）
+     */
+    public function before(User $user, string $ability): ?bool
+    {
+        if ($user->admin_status) {
+            return true;
+        }
+        return null;
+    }
 }

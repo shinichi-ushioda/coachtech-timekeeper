@@ -15,32 +15,21 @@ class AttendanceRecordResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
-            'user_id' => $this->user_id,
-            'work_date' => $this->work_date?->format('Y-m-d'),
-            'clock_in' => $this->clock_in?->format('H:i:s'),
-            'clock_out' => $this->clock_out?->format('H:i:s'),
-
-            // ユーザー情報（読み込まれている場合のみ含める）
-            'user' => $this->whenLoaded('user', fn() =>[
-                'id' => $this->user->id,
-                'name' => $this->user->name,
-                'email' => $this->user->email,
-            ]),
-
-            //　休憩（読み込まれている場合のみ）
-            'breaks' => $this->whenLoaded('breaks', fn() =>
-                $this->breaks->map(fn($break) =>[
-                    'break_in' => $break->break_in?->format('H:i:s'),
-                    'break_out' => $break->break_out?->format('H:i:s'),
-                ])
-            ),
-
-            // 修正申請（読み込まれている場合のみ）
-            'correction' => $this->whenLoaded('correction'),
-
-            'created_at' => $this->created_at,
-            'updated_at'=> $this->updated_at,
+            'id'               => $this->id,
+            'user_id'          => $this->user_id,
+            'user'             => new \App\Http\Resources\UserResource($this->whenLoaded('user')),
+            'date'             => $this->date,
+            'clock_in'         => $this->clock_in ? \Carbon\Carbon::parse($this->clock_in)->format('H:i:s') : null,
+            'clock_out'        => $this->clock_out ? \Carbon\Carbon::parse($this->clock_out)->format('H:i:s') : null,
+            'total_time'       => $this->total_time,
+            'total_break_time' => $this->total_break_time,
+            'comment'          => $this->comment,
+            'breaks'           => \App\Http\Resources\AttendanceBreakResource::collection($this->whenLoaded('breaks')),
+            'applications' => $this->whenLoaded('correction', function () {
+                return $this->correction
+                    ? [new \App\Http\Resources\ApplicationResource($this->correction)]
+                    : [];
+            }, []),
         ];
     }
 }
