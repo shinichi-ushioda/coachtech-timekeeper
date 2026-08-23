@@ -6,7 +6,7 @@ Dockerビルド
 
 1. git clone https://github.com/shinichi-ushioda/coachtech-timekeeper.git
 
-2. docker-compose up -d build
+2. docker-compose up -d --build
 
 ※MySQLは、OSによって起動しない場合があるのでそれぞれのPCに合わせてdocker-compose.ylmlファイルを編集してください。  
 Laravel環境構築
@@ -17,6 +17,7 @@ Laravel環境構築
 4.php artisan key:generate  
 5.php artisan migrate  
 6.php artisan db:seed  
+7.chmod -R 777 storage bootstrap/cache  
 
 ## 使用技術
 ・php 8.3.32  
